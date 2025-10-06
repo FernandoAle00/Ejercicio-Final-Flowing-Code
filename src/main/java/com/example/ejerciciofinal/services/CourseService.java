@@ -1,17 +1,17 @@
 package com.example.ejerciciofinal.services;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.method.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.ejerciciofinal.dtos.AddressDTO;
 import com.example.ejerciciofinal.dtos.CreateCourseDTO;
-import com.example.ejerciciofinal.dtos.CreateUserDTO;
 import com.example.ejerciciofinal.dtos.ResponseCourseDTO;
+import com.example.ejerciciofinal.dtos.ResponseSeatDTO;
+import com.example.ejerciciofinal.mappers.DTOMapper;
 import com.example.ejerciciofinal.model.Course;
 import com.example.ejerciciofinal.model.Professor;
 import com.example.ejerciciofinal.model.Seat;
@@ -31,13 +31,10 @@ public class CourseService {
 
         validateCourseDTO(courseDTO);
 
-        // Crear User
         Set<Seat> seats = courseDTO.getSeats().isEmpty() ? Set.of() : courseDTO.getSeats();
-
         Professor professor = (Professor) userService.getPersonById(courseDTO.getProfessor().getId());
 
-        Course course;
-        course = new Course(
+        Course course = new Course(
                 courseDTO.getName(),
                 professor,
                 seats
@@ -47,8 +44,8 @@ public class CourseService {
 
         return new ResponseCourseDTO(
                 savedCourse.getName(),
-                courseDTO.getProfessor(),
-                courseDTO.getSeats()
+                DTOMapper.toProfessorDTO(savedCourse.getProfessor()),
+                DTOMapper.toSeatDTOs(savedCourse.getSeats())
         );
     }
 
@@ -70,27 +67,14 @@ public class CourseService {
 
         Course courseWithStudents = courseRepository.findById(courseId)
                 .orElseThrow(() -> new IllegalArgumentException("No se encontró el curso con ID: " + courseId));
+        
         courseWithStudents.getSeats().addAll(seats);
         courseWithStudents = courseRepository.save(courseWithStudents);
 
-        CreateUserDTO.ProfessorDTO professorDTO = new CreateUserDTO().new ProfessorDTO(
-                courseWithStudents.getProfessor().getName(),
-                courseWithStudents.getProfessor().getPhone(),
-                courseWithStudents.getProfessor().getEmail(),
-                new AddressDTO(
-                        courseWithStudents.getProfessor().getAddress().getId(),
-                        courseWithStudents.getProfessor().getAddress().getStreet(),
-                        courseWithStudents.getProfessor().getAddress().getCity(),
-                        courseWithStudents.getProfessor().getAddress().getState(),
-                        courseWithStudents.getProfessor().getAddress().getCountry()
-                ),
-                courseWithStudents.getProfessor().getSalary()
-        );
-
         return new ResponseCourseDTO(
                 courseWithStudents.getName(),
-                professorDTO,
-                courseWithStudents.getSeats()
+                DTOMapper.toProfessorDTO(courseWithStudents.getProfessor()),
+                DTOMapper.toSeatDTOs(courseWithStudents.getSeats())
         );
     }
 
@@ -116,4 +100,32 @@ public class CourseService {
             throw new IllegalArgumentException("No se encontró el curso con ID: " + expectedCourseId);
         }
     }
+
+    public ResponseSeatDTO setMarkToStudentInCourse(Long courseId, Long studentId, Double mark){
+
+        Optional<Course> courseOpt = courseRepository.findById(courseId);
+        if(courseOpt.isEmpty()){
+            throw new IllegalArgumentException("No se encontró el curso con ID: " + courseId);
+        }
+
+        Course course = courseOpt.get();
+        Optional<Seat> seatOpt = course.getSeats().stream()
+                .filter(seat -> seat.getStudent().getId().equals(studentId))
+                .findFirst();
+        
+        if(seatOpt.isEmpty()){
+            throw new IllegalArgumentException("El estudiante con ID: " + studentId + " no está inscrito en el curso con ID: " + courseId);
+        }
+        
+        Seat seat = seatOpt.get();
+        seat.setMark(mark);
+        courseRepository.save(course);
+
+        return new ResponseSeatDTO(
+                seat.getYear(),
+                DTOMapper.toStudentDTO(seat.getStudent()),
+                seat.getMark()
+        );
+    }
+
 }
