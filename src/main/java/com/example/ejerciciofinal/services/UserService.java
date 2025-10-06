@@ -110,4 +110,8 @@ public class UserService {
         );
     }
 
+    public Person getPersonById(Long id){
+        return userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("No se encontró el usuario con ID: " + id)).getPerson();
+    }
+
 }

@@ -1,15 +1,5 @@
 package com.example.ejerciciofinal.dtos;
-
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
-
-import com.example.ejerciciofinal.model.Person;
 import com.example.ejerciciofinal.model.Role;
-import com.example.ejerciciofinal.model.Seat;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.OneToMany;
 
 public class CreateUserDTO {
 

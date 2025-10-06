@@ -52,4 +52,10 @@ public class Course {
     
     protected Course() { // To keep Hibernate happy
     }
+
+    public Course(String name, Professor professor, Set<Seat> seats) {
+        this.name = name;
+        this.professor = professor;
+        this.seats = seats;
+    }
 }
