@@ -1,6 +1,7 @@
 package com.example.ejerciciofinal.services;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import com.example.ejerciciofinal.dtos.AddressDTO;
 import com.example.ejerciciofinal.dtos.CreateCourseDTO;
 import com.example.ejerciciofinal.dtos.CreateUserDTO;
 import com.example.ejerciciofinal.dtos.ResponseCourseDTO;
+import com.example.ejerciciofinal.dtos.ResponseSeatDTO;
 import com.example.ejerciciofinal.model.Course;
 import com.example.ejerciciofinal.model.Professor;
 import com.example.ejerciciofinal.model.Seat;
@@ -116,4 +118,45 @@ public class CourseService {
             throw new IllegalArgumentException("No se encontró el curso con ID: " + expectedCourseId);
         }
     }
+
+    public ResponseSeatDTO setMarkToStudentInCourse(Long courseId, Long studentId, Double mark){
+
+        Optional<Course> courseOpt = courseRepository.findById(courseId);
+        if(courseOpt.isEmpty()){
+            throw new IllegalArgumentException("No se encontró el curso con ID: " + courseId);
+        }
+
+        Course course = courseOpt.get();
+        Optional<Seat> seatOpt = course.getSeats().stream()
+                .filter(seat -> seat.getStudent().getId().equals(studentId))
+                .findFirst();
+        if(seatOpt.isEmpty()){
+            throw new IllegalArgumentException("El estudiante con ID: " + studentId + " no está inscrito en el curso con ID: " + courseId);
+        }
+        Seat seat = seatOpt.get();
+        seat.setMark(mark);
+        courseRepository.save(course);
+
+        // Convertir Student a StudentDTO
+        CreateUserDTO.StudentDTO studentDTO = new CreateUserDTO().new StudentDTO(
+                seat.getStudent().getName(),
+                seat.getStudent().getPhone(),
+                seat.getStudent().getEmail(),
+                new AddressDTO(
+                        seat.getStudent().getAddress().getId(),
+                        seat.getStudent().getAddress().getStreet(),
+                        seat.getStudent().getAddress().getCity(),
+                        seat.getStudent().getAddress().getState(),
+                        seat.getStudent().getAddress().getCountry()
+                ),
+                seat.getStudent().getAvgMark()
+        );
+
+        return new ResponseSeatDTO(
+                seat.getYear(),
+                studentDTO,
+                seat.getMark()
+        );
+    }
+
 }

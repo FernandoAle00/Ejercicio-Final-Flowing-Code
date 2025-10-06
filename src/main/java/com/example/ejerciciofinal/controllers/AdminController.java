@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.ejerciciofinal.dtos.CreateCourseDTO;
 import com.example.ejerciciofinal.dtos.CreateUserDTO;
 import com.example.ejerciciofinal.dtos.ResponseCourseDTO;
+import com.example.ejerciciofinal.dtos.ResponseSeatDTO;
 import com.example.ejerciciofinal.dtos.ResponseUserDTO;
 import com.example.ejerciciofinal.model.Seat;
 import com.example.ejerciciofinal.services.CourseService;
@@ -60,6 +62,19 @@ public class AdminController {
     public ResponseEntity<?> assignStudentsToCourse(Set<Seat> seats, Long courseId) {
         try {
             ResponseCourseDTO response = courseService.assignStudentsToCourse(seats, courseId);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/course/setMark")
+    public ResponseEntity<?> setMarkToStudentInCourse(Long courseId, Long studentId, Double mark) {
+        try {
+            ResponseSeatDTO response = courseService.setMarkToStudentInCourse(courseId, studentId, mark);
             return ResponseEntity.status(HttpStatus.OK).body(response);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
