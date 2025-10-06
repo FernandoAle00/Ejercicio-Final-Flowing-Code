@@ -1,5 +1,7 @@
 package com.example.ejerciciofinal.services;
 
+import java.util.HashSet;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -75,12 +77,14 @@ public class UserService {
                 return null;
             }
             case StudentDTO studentDTO -> {
+                // Student se crea sin seats inicialmente
+                // Los seats se agregarán después mediante SeatService
                 return new Student(
                         personDTO.getName(),
                         personDTO.getPhone(),
                         personDTO.getEmail(),
                         getAddressFromAddressDTO(personDTO.getAddress()),
-                        studentDTO.getAvgMark()
+                        new HashSet<>() // Inicialmente vacío
                 );
             }
             case ProfessorDTO professorDTO -> {
@@ -89,7 +93,7 @@ public class UserService {
                         personDTO.getPhone(),
                         personDTO.getEmail(),
                         getAddressFromAddressDTO(personDTO.getAddress()),
-                        professorDTO.getSalary()
+                        professorDTO.getSalary() != null ? professorDTO.getSalary() : 0.0
                 );
             }
             default -> {

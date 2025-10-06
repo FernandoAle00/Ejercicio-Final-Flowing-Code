@@ -2,19 +2,16 @@ package com.example.ejerciciofinal.dtos;
 
 import java.util.Set;
 
-import com.example.ejerciciofinal.dtos.CreateUserDTO.ProfessorDTO;
-import com.example.ejerciciofinal.model.Seat;
-
 public class ResponseCourseDTO {
 
     private String name;
-    private ProfessorDTO professor;
-    private Set<Seat> seats;
+    private CreateUserDTO.ProfessorDTO professor;
+    private Set<SeatDTO> seats;
 
     public ResponseCourseDTO() {
     }
 
-    public ResponseCourseDTO(String name, ProfessorDTO professor, Set<Seat> seats) {
+    public ResponseCourseDTO(String name, CreateUserDTO.ProfessorDTO professor, Set<SeatDTO> seats) {
         this.name = name;
         this.professor = professor;
         this.seats = seats;
@@ -28,16 +25,19 @@ public class ResponseCourseDTO {
         this.name = name;
     }
 
-    public ProfessorDTO getProfessor() {
+    public CreateUserDTO.ProfessorDTO getProfessor() {
         return professor;
     }
-    public void setProfessor(ProfessorDTO professor) {
+    
+    public void setProfessor(CreateUserDTO.ProfessorDTO professor) {
         this.professor = professor;
     }
-    public Set<Seat> getSeats() {
+    
+    public Set<SeatDTO> getSeats() {
         return seats;
     }
-    public void setSeats(Set<Seat> seats) {
+    
+    public void setSeats(Set<SeatDTO> seats) {
         this.seats = seats;
     }
 

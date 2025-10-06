@@ -1,8 +1,12 @@
 package com.example.ejerciciofinal.dtos;
 
-import com.example.ejerciciofinal.model.Professor;
 import com.example.ejerciciofinal.model.Role;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+/**
+ * DTO para la creación de usuarios
+ */
 public class CreateUserDTO {
 
     private String userName;
@@ -20,20 +24,21 @@ public class CreateUserDTO {
         this.person = person;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
+    // Getters y Setters
     public String getUserName() {
         return userName;
     }
 
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
     public String getPassword() {
         return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public Role getRole() {
@@ -44,16 +49,25 @@ public class CreateUserDTO {
         this.role = role;
     }
 
-    public void setPerson(PersonDTO person) {
-        this.person = person;
-    }
-
     public PersonDTO getPerson() {
         return person;
     }
 
-    public class PersonDTO {
+    public void setPerson(PersonDTO person) {
+        this.person = person;
+    }
 
+    // ===== CLASES INTERNAS =====
+
+    /**
+     * DTO base para Person (polimórfico)
+     */
+    @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+    @JsonSubTypes({
+        @JsonSubTypes.Type(value = StudentDTO.class, name = "student"),
+        @JsonSubTypes.Type(value = ProfessorDTO.class, name = "professor")
+    })
+    public static abstract class PersonDTO {
         private Long id;
         private String name;
         private String phone;
@@ -63,57 +77,79 @@ public class CreateUserDTO {
         public PersonDTO() {
         }
 
-        public PersonDTO(String name, String phone, String email, AddressDTO address) {
+        public PersonDTO(Long id, String name, String phone, String email, AddressDTO address) {
+            this.id = id;
             this.name = name;
             this.phone = phone;
             this.email = email;
             this.address = address;
         }
 
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public void setPhone(String phone) {
-            this.phone = phone;
-        }
-
-        public void setEmail(String email) {
-            this.email = email;
-        }
-
+        // Getters y Setters
         public Long getId() {
             return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
         }
 
         public String getName() {
             return name;
         }
 
+        public void setName(String name) {
+            this.name = name;
+        }
+
         public String getPhone() {
             return phone;
+        }
+
+        public void setPhone(String phone) {
+            this.phone = phone;
         }
 
         public String getEmail() {
             return email;
         }
 
-        public void setAddress(AddressDTO address) {
-            this.address = address;
+        public void setEmail(String email) {
+            this.email = email;
         }
 
         public AddressDTO getAddress() {
             return address;
         }
+
+        public void setAddress(AddressDTO address) {
+            this.address = address;
+        }
     }
 
-    public class StudentDTO extends PersonDTO {
-
+    /**
+     * DTO para Student - SIN Set<SeatDTO> para evitar referencias circulares
+     */
+    public static class StudentDTO extends PersonDTO {
+        private String studentNumber;
         private Double avgMark;
 
-        public StudentDTO(String name, String phone, String email, AddressDTO address, Double avgMark) {
-            super(name, phone, email, address);
+        public StudentDTO() {
+        }
+
+        public StudentDTO(Long id, String name, String phone, String email, AddressDTO address, 
+                         String studentNumber, Double avgMark) {
+            super(id, name, phone, email, address);
+            this.studentNumber = studentNumber;
             this.avgMark = avgMark;
+        }
+
+        public String getStudentNumber() {
+            return studentNumber;
+        }
+
+        public void setStudentNumber(String studentNumber) {
+            this.studentNumber = studentNumber;
         }
 
         public Double getAvgMark() {
@@ -123,15 +159,20 @@ public class CreateUserDTO {
         public void setAvgMark(Double avgMark) {
             this.avgMark = avgMark;
         }
-
     }
 
-    public class ProfessorDTO extends PersonDTO {
-
+    /**
+     * DTO para Professor
+     */
+    public static class ProfessorDTO extends PersonDTO {
         private Double salary;
 
-        public ProfessorDTO(String name, String phone, String email, AddressDTO address, Double salary) {
-            super(name, phone, email, address);
+        public ProfessorDTO() {
+        }
+
+        public ProfessorDTO(Long id, String name, String phone, String email, AddressDTO address, 
+                           Double salary) {
+            super(id, name, phone, email, address);
             this.salary = salary;
         }
 
@@ -142,6 +183,5 @@ public class CreateUserDTO {
         public void setSalary(Double salary) {
             this.salary = salary;
         }
-
     }
 }

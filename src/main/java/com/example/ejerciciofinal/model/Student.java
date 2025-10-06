@@ -19,9 +19,10 @@ public class Student extends Person {
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Seat> seats = new HashSet<>();
 
-    public Student(String name, String phone, String email, Address address, Double avgMark) {
+    public Student(String name, String phone, String email, Address address, Set<Seat> seats) {
         super(name, phone, email, address);
-        this.avgMark = avgMark;
+        this.seats = seats;
+        this.avgMark = this.calculateAvgMark(seats);
     }
 
     public UUID getStudentNumber() {
@@ -42,9 +43,21 @@ public class Student extends Person {
 
     public void setSeats(Set<Seat> seats) {
         this.seats = seats;
+        this.avgMark = this.calculateAvgMark(seats);
     }
 
     protected Student() { // To keep Hibernate happy
     }
 
+    private Double calculateAvgMark(Set<Seat> seats) {
+        if (seats.isEmpty()) {
+            return 0.0;
+        } else {
+            Double total = 0.0;
+            for (Seat seat : seats) {
+                total += seat.getMark();
+            }
+            return total / seats.size();
+        }
+    }
 }
