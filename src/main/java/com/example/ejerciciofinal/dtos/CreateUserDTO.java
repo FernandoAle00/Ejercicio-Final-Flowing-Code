@@ -1,4 +1,6 @@
 package com.example.ejerciciofinal.dtos;
+
+import com.example.ejerciciofinal.model.Professor;
 import com.example.ejerciciofinal.model.Role;
 
 public class CreateUserDTO {
@@ -6,7 +8,7 @@ public class CreateUserDTO {
     private String userName;
     private String password;
     private Role role;
-    private PersonDTO person;
+    private PersonDTO person = null;
 
     public CreateUserDTO() {
     }
