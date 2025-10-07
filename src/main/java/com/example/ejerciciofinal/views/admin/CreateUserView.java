@@ -59,11 +59,9 @@ public class CreateUserView extends VerticalLayout {
     private final TextField countryField = new TextField("País");
 
     // Campos específicos por rol
-    // Sección de estudiante
+    // Sección de estudiante (sin avgMark, se calcula automáticamente desde Seats)
     private final VerticalLayout studentSection = new VerticalLayout();
     private final H3 studentTitle = new H3("Datos de Estudiante");
-    private final TextField studentNumberField = new TextField("Número de estudiante");
-    private final NumberField avgMarkField = new NumberField("Promedio de notas");
 
     // Sección de profesor
     private final VerticalLayout professorSection = new VerticalLayout();
@@ -79,8 +77,9 @@ public class CreateUserView extends VerticalLayout {
         setPadding(true);
         setMaxWidth("800px");
 
-        // Títutlo principal
+        // Título principal
         H2 title = new H2("Crear Nuevo Usuario");
+        add(title);
 
         // Campos de user
         usernameField.setWidthFull();
@@ -134,18 +133,9 @@ public class CreateUserView extends VerticalLayout {
         studentSection.setPadding(false);
         studentSection.setSpacing(false);
         studentSection.setVisible(false); // inicialmente oculta
-
-        studentNumberField.setWidthFull();
-        studentNumberField.setRequired(true);
-        studentNumberField.setPlaceholder("Legajo de 6 dígitos");
-
-        avgMarkField.setWidthFull();
-        avgMarkField.setMin(0);
-        avgMarkField.setMax(10);
-        avgMarkField.setValue(0.0);
-        avgMarkField.setStep(0.1);
-
-        studentSection.add(studentTitle, studentNumberField, avgMarkField);
+        
+        // Solo mostrar título, sin campos adicionales (avgMark se calcula automáticamente)
+        studentSection.add(studentTitle);
 
         // Sección profesor
         professorSection.setPadding(false);
@@ -237,18 +227,13 @@ public class CreateUserView extends VerticalLayout {
                 PersonDTO personDTO;
 
                 if (role == Role.STUDENT) {
-                    if (studentNumberField.isEmpty() || avgMarkField.isEmpty()) {
-                        showError("Por favor complete todos los campos de estudiante");
-                        return;
-                    }
-
+                    // avgMark se calculará automáticamente cuando se asignen Seats
                     StudentDTO studentDTO = new StudentDTO();
                     studentDTO.setName(nameField.getValue());
                     studentDTO.setEmail(emailField.getValue());
                     studentDTO.setPhone(phoneField.getValue());
                     studentDTO.setAddress(addressDTO);
-                    studentDTO.setStudentNumber(studentNumberField.getValue());
-                    studentDTO.setAvgMark(avgMarkField.getValue() != null ? avgMarkField.getValue() : 0.0);
+                    // studentNumber y avgMark se generan automáticamente
 
                     personDTO = studentDTO;
                 } else {
@@ -351,8 +336,6 @@ public class CreateUserView extends VerticalLayout {
         nameField.clear();
         emailField.clear();
         phoneField.clear();
-        studentNumberField.clear();
-        avgMarkField.clear();
         salaryField.clear();
     }
 }

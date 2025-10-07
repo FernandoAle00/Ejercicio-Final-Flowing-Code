@@ -1,13 +1,17 @@
 package com.example.ejerciciofinal.mappers;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.example.ejerciciofinal.dtos.AddressDTO;
 import com.example.ejerciciofinal.dtos.CourseDTO;
 import com.example.ejerciciofinal.dtos.CreateUserDTO;
+import com.example.ejerciciofinal.dtos.CreateUserDTO.ProfessorDTO;
+import com.example.ejerciciofinal.dtos.CreateUserDTO.StudentDTO;
 import com.example.ejerciciofinal.dtos.SeatDTO;
 import com.example.ejerciciofinal.dtos.StudentDetailDTO;
+import com.example.ejerciciofinal.model.Course;
 import com.example.ejerciciofinal.model.Professor;
 import com.example.ejerciciofinal.model.Seat;
 import com.example.ejerciciofinal.model.Student;
@@ -47,18 +51,17 @@ public class DTOMapper {
 
     /**
      * Convierte un Student a StudentDTO (sin seats para evitar ciclos)
+     * avgMark se obtiene directamente del modelo (calculado desde Seats)
      */
-    public static CreateUserDTO.StudentDTO toStudentDTO(Student student) {
+    public static StudentDTO toStudentDTO(Student student) {
         if (student == null) return null;
         
-        return new CreateUserDTO.StudentDTO(
+        return new StudentDTO(
             student.getId(),
             student.getName(),
             student.getPhone(),
             student.getEmail(),
-            toAddressDTO(student.getAddress()),
-            student.getStudentNumber() != null ? student.getStudentNumber().toString() : null,
-            student.getAvgMark()
+            toAddressDTO(student.getAddress())
         );
     }
 
@@ -83,7 +86,7 @@ public class DTOMapper {
     /**
      * Convierte un Professor a ProfessorDTO
      */
-    public static CreateUserDTO.ProfessorDTO toProfessorDTO(Professor professor) {
+    public static ProfessorDTO toProfessorDTO(Professor professor) {
         if (professor == null) return null;
         
         return new CreateUserDTO.ProfessorDTO(
@@ -94,6 +97,14 @@ public class DTOMapper {
             toAddressDTO(professor.getAddress()),
             professor.getSalary()
         );
+    }
+
+    public static List<ProfessorDTO> toProfessorDTO(List<Professor> professors){
+        if (professors == null) return null;
+
+        return professors.stream()
+                .map(DTOMapper::toProfessorDTO)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -113,7 +124,7 @@ public class DTOMapper {
     /**
      * Convierte un Course a CourseDTO (con seats simplificados)
      */
-    public static CourseDTO toCourseDTO(com.example.ejerciciofinal.model.Course course) {
+    public static CourseDTO toCourseDTO(Course course) {
         if (course == null) return null;
         
         return new CourseDTO(
@@ -123,5 +134,13 @@ public class DTOMapper {
             course.getProfessor() != null ? course.getProfessor().getName() : null,
             toSeatDTOs(course.getSeats())
         );
+    }
+
+    public static List<CourseDTO> toCourseDTOs(List<Course> courses){
+        if (courses == null) return null;
+
+        return courses.stream()
+                .map(DTOMapper::toCourseDTO)
+                .collect(Collectors.toList());
     }
 }

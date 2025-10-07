@@ -8,14 +8,22 @@ import java.time.LocalDate;
 public class Seat {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
     @Column(name = "year", nullable = false)
     private LocalDate year;
 
-    @Column(name = "mark", nullable = false)
+    @Column(name = "mark")
     private Double mark;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "student_id")
+    private Student student;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "course_id", nullable = false)
+    private Course course;
 
     public Long getId() {
         return id;
@@ -52,14 +60,6 @@ public class Seat {
     public void setCourse(Course course) {
         this.course = course;
     }
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "student_id", nullable = false)
-    private Student student;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "course_id", nullable = false)
-    private Course course;
 
     public Seat(LocalDate year, Double mark, Student student, Course course) {
         this.year = year;

@@ -22,6 +22,19 @@ public class SeatDTO {
     public SeatDTO() {
     }
 
+    /**
+     * Constructor para crear SeatDTO vacío (cupo disponible sin asignar)
+     * Útil cuando se crean cupos por cantidad
+     */
+    public SeatDTO(LocalDate year) {
+        this.year = year;
+        this.mark = null;
+        this.studentId = null;
+        this.studentName = null;
+        this.courseId = null;
+        this.courseName = null;
+    }
+
     public SeatDTO(Long id, LocalDate year, Double mark, Long studentId, String studentName,
             Long courseId, String courseName) {
         this.id = id;

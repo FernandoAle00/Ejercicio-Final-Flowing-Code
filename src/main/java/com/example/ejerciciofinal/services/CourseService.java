@@ -1,27 +1,40 @@
 package com.example.ejerciciofinal.services;
 
+import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.ejerciciofinal.dtos.CourseDTO;
 import com.example.ejerciciofinal.dtos.CreateCourseDTO;
 import com.example.ejerciciofinal.dtos.ResponseCourseDTO;
 import com.example.ejerciciofinal.dtos.ResponseSeatDTO;
+import com.example.ejerciciofinal.dtos.SeatDTO;
 import com.example.ejerciciofinal.mappers.DTOMapper;
 import com.example.ejerciciofinal.model.Course;
 import com.example.ejerciciofinal.model.Professor;
 import com.example.ejerciciofinal.model.Seat;
+import com.example.ejerciciofinal.model.Student;
 import com.example.ejerciciofinal.repository.CourseRepository;
+import com.example.ejerciciofinal.repository.ProfessorRepository;
 
 @Service
 public class CourseService {
 
     @Autowired
     private CourseRepository courseRepository;
+
+    @Autowired
+    private ProfessorRepository professorRepository;
 
     @Autowired
     private UserService userService;
@@ -31,14 +44,44 @@ public class CourseService {
 
         validateCourseDTO(courseDTO);
 
-        Set<Seat> seats = courseDTO.getSeats().isEmpty() ? Set.of() : courseDTO.getSeats();
-        Professor professor = (Professor) userService.getPersonById(courseDTO.getProfessor().getId());
+        // Obtener el profesor directamente del repositorio de profesores
+        Professor professor = professorRepository.findById(courseDTO.getProfessor().getId())
+                .orElseThrow(() -> new IllegalArgumentException("No se encontró el profesor con ID: " + courseDTO.getProfessor().getId()));
+        
+        Course course;
 
-        Course course = new Course(
+        // Opción 1: Si se especificó cantidad de cupos, crear curso con esa cantidad
+        if (courseDTO.getSeatsAmmount() != null && courseDTO.getSeatsAmmount() > 0) {
+            course = new Course(
                 courseDTO.getName(),
                 professor,
-                seats
-        );
+                courseDTO.getSeatsAmmount()
+            );
+        }
+        // Opción 2: Si se proporcionaron SeatDTOs, convertirlos a Seats
+        else if (courseDTO.getSeats() != null && !courseDTO.getSeats().isEmpty()) {
+            Set<Seat> seats = new HashSet<>();
+            course = new Course(courseDTO.getName(), professor, new HashSet<>());
+            
+            for (SeatDTO seatDTO : courseDTO.getSeats()) {
+                Seat seat = new Seat(
+                    seatDTO.getYear() != null ? seatDTO.getYear() : LocalDate.now(),
+                    seatDTO.getMark(),
+                    seatDTO.getStudentId() != null ? (Student) userService.getPersonById(seatDTO.getStudentId()) : null,
+                    course
+                );
+                seats.add(seat);
+            }
+            course.setSeats(seats);
+        }
+        // Opción 3: Crear curso sin cupos
+        else {
+            course = new Course(
+                courseDTO.getName(),
+                professor,
+                new HashSet<>()
+            );
+        }
 
         Course savedCourse = courseRepository.save(course);
 
@@ -128,4 +171,32 @@ public class CourseService {
         );
     }
 
+    /*
+     * Obtiene todos los cursos de tipo Course paginados
+     * @param pageIndex índice de la página (comienza en 0)
+     * @param pageSize cantidad de registros por página
+     *  return Page<Course> con los cursos paginados
+     */
+    @Transactional(readOnly = true)
+    public Page<Course> findAllCoursesPaginated(int pageIndex, int pageSize){
+        Pageable pageable =  PageRequest.of(pageIndex, pageSize, Sort.by("id").ascending());
+        return courseRepository.findAll(pageable);
+    }
+
+    /*  
+     * Cuenta el total de cursos registrados
+     * @return total de registros Course
+     */
+    @Transactional(readOnly = true)
+    public long countCourses(){
+        return courseRepository.count();
+    }
+
+    public List<CourseDTO> getAllCourses() {
+        Optional<List<Course>> coursesOpt = Optional.of(courseRepository.findAll());
+        if(coursesOpt.isPresent()){
+            return DTOMapper.toCourseDTOs(coursesOpt.get());
+        }
+        else return null;
+    }
 }
