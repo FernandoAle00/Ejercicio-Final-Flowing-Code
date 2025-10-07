@@ -1,6 +1,7 @@
 package com.example.ejerciciofinal.services;
 
 import java.util.HashSet;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -16,6 +17,7 @@ import com.example.ejerciciofinal.dtos.CreateUserDTO.PersonDTO;
 import com.example.ejerciciofinal.dtos.CreateUserDTO.ProfessorDTO;
 import com.example.ejerciciofinal.dtos.CreateUserDTO.StudentDTO;
 import com.example.ejerciciofinal.dtos.ResponseUserDTO;
+import com.example.ejerciciofinal.mappers.DTOMapper;
 import com.example.ejerciciofinal.model.Address;
 import com.example.ejerciciofinal.model.Person;
 import com.example.ejerciciofinal.model.Professor;
@@ -126,6 +128,10 @@ public class UserService {
         return userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("No se encontró el usuario con ID: " + id)).getPerson();
     }
 
+    public List<ProfessorDTO> getAllProfessors() {
+        return DTOMapper.toProfessorDTO(personRepository.findAllProfessors());
+    }
+
     /**
      * Obtiene todos los usuarios de tipo Person paginados
      * @param pageIndex Índice de la página (comienza en 0)
@@ -134,7 +140,7 @@ public class UserService {
      */
     @Transactional(readOnly = true)
     public Page<Person> findAllPersonsPaginated(int pageIndex, int pageSize) {
-        Pageable pageable = PageRequest.of(pageIndex, pageSize, Sort.by("name").ascending());
+        Pageable pageable = PageRequest.of(pageIndex, pageSize, Sort.by("id").ascending());
         return personRepository.findAll(pageable);
     }
 

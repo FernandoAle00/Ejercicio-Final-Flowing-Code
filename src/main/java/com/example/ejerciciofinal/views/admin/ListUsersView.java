@@ -1,6 +1,5 @@
 package com.example.ejerciciofinal.views.admin;
 
-import org.hibernate.type.TrueFalseConverter;
 import org.springframework.data.domain.Page;
 
 import com.example.ejerciciofinal.model.Person;
@@ -30,7 +29,8 @@ public class ListUsersView extends VerticalLayout {
     public ListUsersView(UserService userService) {
         this.userService = userService;
 
-        setSizeFull();
+        // Solo ancho completo, altura automática según contenido
+        setWidthFull();
         setPadding(true);
         setSpacing(true);
 
@@ -47,7 +47,10 @@ public class ListUsersView extends VerticalLayout {
     }
 
     private void configureGrid() {
-        grid.setSizeFull();
+        // Altura calculada: ~50px por fila + header + padding
+        // 10 filas * 50px = 500px + 100px extra = 600px
+        grid.setHeight("600px");
+        grid.setWidthFull();
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_COMPACT);
 
         // Definir columnas, ya que la autogeneración de columnas está deshabilitada

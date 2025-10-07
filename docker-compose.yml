@@ -34,6 +34,7 @@ services:
   #   ports:
   #     - "8080:8080"
   #   environment:
+  #     SPRING_PROFILES_ACTIVE: dev  # Usa perfil DEV (crea tablas automáticamente)
   #     SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/sistema_academico
   #     SPRING_DATASOURCE_USERNAME: admin
   #     SPRING_DATASOURCE_PASSWORD: admin123

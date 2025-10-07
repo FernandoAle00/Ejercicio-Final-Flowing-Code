@@ -1,6 +1,7 @@
 package com.example.ejerciciofinal.model;
 
 import jakarta.persistence.*;
+import java.time.LocalDate;
 import java.util.Set;
 import java.util.HashSet;
 
@@ -57,5 +58,28 @@ public class Course {
         this.name = name;
         this.professor = professor;
         this.seats = seats;
+    }
+
+    /**
+     * Constructor para crear un curso con una cantidad específica de cupos vacíos
+     * @param name Nombre del curso
+     * @param professor Profesor asignado
+     * @param numberOfSeats Cantidad de cupos a crear
+     */
+    public Course(String name, Professor professor, int numberOfSeats) {
+        this.name = name;
+        this.professor = professor;
+        this.seats = new HashSet<>();
+        
+        // Crear cupos vacíos (sin estudiantes asignados)
+        for (int i = 0; i < numberOfSeats; i++) {
+            Seat seat = new Seat(
+                LocalDate.now(), // Año actual
+                null,            // Sin nota inicial
+                null,            // Sin estudiante asignado
+                this             // Curso actual
+            );
+            this.seats.add(seat);
+        }
     }
 }

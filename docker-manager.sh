@@ -106,7 +106,16 @@ function restore_db() {
 
 function run_app() {
     print_header "Ejecutando aplicación Spring Boot"
-    ./mvnw spring-boot:run
+    echo "Usando perfil: DEV (crea tablas automáticamente)"
+    echo ""
+    SPRING_PROFILES_ACTIVE=dev ./mvnw spring-boot:run
+}
+
+function run_app_prod() {
+    print_header "Ejecutando aplicación Spring Boot (PRODUCCIÓN)"
+    echo "Usando perfil: PROD (actualiza tablas sin borrar)"
+    echo ""
+    SPRING_PROFILES_ACTIVE=prod ./mvnw spring-boot:run
 }
 
 function build_app() {
@@ -149,7 +158,8 @@ ${GREEN}Comandos disponibles:${NC}
     restore     Restaurar backup (uso: restore <archivo.sql>)
     
   ${YELLOW}Aplicación:${NC}
-    run         Ejecutar aplicación localmente (./mvnw spring-boot:run)
+    run         Ejecutar aplicación localmente (perfil DEV - crea tablas)
+    run-prod    Ejecutar aplicación localmente (perfil PROD - actualiza tablas)
     build       Construir y ejecutar con Docker
     
   ${YELLOW}Ayuda:${NC}
@@ -196,6 +206,9 @@ case "$1" in
         ;;
     run)
         run_app
+        ;;
+    run-prod)
+        run_app_prod
         ;;
     build)
         build_app
