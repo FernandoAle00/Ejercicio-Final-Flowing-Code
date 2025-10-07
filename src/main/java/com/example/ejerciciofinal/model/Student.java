@@ -21,6 +21,7 @@ public class Student extends Person {
 
     public Student(String name, String phone, String email, Address address, Set<Seat> seats) {
         super(name, phone, email, address);
+        this.studentNumber = UUID.randomUUID(); // Generar UUID automáticamente
         this.seats = seats;
         this.avgMark = this.calculateAvgMark(seats);
     }

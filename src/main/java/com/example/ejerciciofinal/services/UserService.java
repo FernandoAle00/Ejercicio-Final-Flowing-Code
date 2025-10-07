@@ -1,8 +1,13 @@
 package com.example.ejerciciofinal.services;
 
 import java.util.HashSet;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +22,7 @@ import com.example.ejerciciofinal.model.Person;
 import com.example.ejerciciofinal.model.Professor;
 import com.example.ejerciciofinal.model.Student;
 import com.example.ejerciciofinal.model.User;
+import com.example.ejerciciofinal.repository.PersonRepository;
 import com.example.ejerciciofinal.repository.UserRepository;
 
 @Service
@@ -24,6 +30,9 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private PersonRepository personRepository;
 
     @Transactional
     public ResponseUserDTO createUser(CreateUserDTO userDTO) {
@@ -116,6 +125,27 @@ public class UserService {
 
     public Person getPersonById(Long id){
         return userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("No se encontró el usuario con ID: " + id)).getPerson();
+    }
+
+    /**
+     * Obtiene todos los usuarios de tipo Person paginados
+     * @param pageIndex Índice de la página (comienza en 0)
+     * @param pageSize Cantidad de registros por página
+     * @return Page<Person> con los usuarios paginados
+     */
+    @Transactional(readOnly = true)
+    public Page<Person> findAllPersonsPaginated(int pageIndex, int pageSize) {
+        Pageable pageable = PageRequest.of(pageIndex, pageSize, Sort.by("name").ascending());
+        return personRepository.findAll(pageable);
+    }
+
+    /**
+     * Cuenta el total de personas registradas
+     * @return Total de registros Person
+     */
+    @Transactional(readOnly = true)
+    public long countPersons() {
+        return personRepository.count();
     }
 
 }

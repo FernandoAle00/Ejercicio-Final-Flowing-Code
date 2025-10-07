@@ -129,27 +129,18 @@ public class CreateUserDTO {
 
     /**
      * DTO para Student - SIN Set<SeatDTO> para evitar referencias circulares
+     * studentNumber se genera automáticamente como UUID, no se incluye en el DTO de creación
      */
     public static class StudentDTO extends PersonDTO {
-        private String studentNumber;
         private Double avgMark;
 
         public StudentDTO() {
         }
 
         public StudentDTO(Long id, String name, String phone, String email, AddressDTO address, 
-                         String studentNumber, Double avgMark) {
+                         Double avgMark) {
             super(id, name, phone, email, address);
-            this.studentNumber = studentNumber;
             this.avgMark = avgMark;
-        }
-
-        public String getStudentNumber() {
-            return studentNumber;
-        }
-
-        public void setStudentNumber(String studentNumber) {
-            this.studentNumber = studentNumber;
         }
 
         public Double getAvgMark() {

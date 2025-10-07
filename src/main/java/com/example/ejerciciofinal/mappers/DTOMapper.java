@@ -47,6 +47,7 @@ public class DTOMapper {
 
     /**
      * Convierte un Student a StudentDTO (sin seats para evitar ciclos)
+     * studentNumber no se incluye porque se genera automáticamente
      */
     public static CreateUserDTO.StudentDTO toStudentDTO(Student student) {
         if (student == null) return null;
@@ -57,7 +58,6 @@ public class DTOMapper {
             student.getPhone(),
             student.getEmail(),
             toAddressDTO(student.getAddress()),
-            student.getStudentNumber() != null ? student.getStudentNumber().toString() : null,
             student.getAvgMark()
         );
     }
