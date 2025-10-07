@@ -47,7 +47,7 @@ public class DTOMapper {
 
     /**
      * Convierte un Student a StudentDTO (sin seats para evitar ciclos)
-     * studentNumber no se incluye porque se genera automáticamente
+     * avgMark se obtiene directamente del modelo (calculado desde Seats)
      */
     public static CreateUserDTO.StudentDTO toStudentDTO(Student student) {
         if (student == null) return null;
@@ -57,8 +57,7 @@ public class DTOMapper {
             student.getName(),
             student.getPhone(),
             student.getEmail(),
-            toAddressDTO(student.getAddress()),
-            student.getAvgMark()
+            toAddressDTO(student.getAddress())
         );
     }
 

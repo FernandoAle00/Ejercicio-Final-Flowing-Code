@@ -59,11 +59,9 @@ public class CreateUserView extends VerticalLayout {
     private final TextField countryField = new TextField("País");
 
     // Campos específicos por rol
-    // Sección de estudiante
+    // Sección de estudiante (sin avgMark, se calcula automáticamente desde Seats)
     private final VerticalLayout studentSection = new VerticalLayout();
     private final H3 studentTitle = new H3("Datos de Estudiante");
-    // studentNumber se genera automáticamente como UUID, no se pide en el formulario
-    private final NumberField avgMarkField = new NumberField("Promedio de notas");
 
     // Sección de profesor
     private final VerticalLayout professorSection = new VerticalLayout();
@@ -135,14 +133,9 @@ public class CreateUserView extends VerticalLayout {
         studentSection.setPadding(false);
         studentSection.setSpacing(false);
         studentSection.setVisible(false); // inicialmente oculta
-
-        avgMarkField.setWidthFull();
-        avgMarkField.setMin(0);
-        avgMarkField.setMax(10);
-        avgMarkField.setValue(0.0);
-        avgMarkField.setStep(0.1);
-
-        studentSection.add(studentTitle, avgMarkField);
+        
+        // Solo mostrar título, sin campos adicionales (avgMark se calcula automáticamente)
+        studentSection.add(studentTitle);
 
         // Sección profesor
         professorSection.setPadding(false);
@@ -234,14 +227,13 @@ public class CreateUserView extends VerticalLayout {
                 PersonDTO personDTO;
 
                 if (role == Role.STUDENT) {
-                    // El avgMark es opcional, si está vacío se inicializa en 0.0
+                    // avgMark se calculará automáticamente cuando se asignen Seats
                     StudentDTO studentDTO = new StudentDTO();
                     studentDTO.setName(nameField.getValue());
                     studentDTO.setEmail(emailField.getValue());
                     studentDTO.setPhone(phoneField.getValue());
                     studentDTO.setAddress(addressDTO);
-                    // studentNumber se omite, se genera automáticamente como UUID
-                    studentDTO.setAvgMark(avgMarkField.getValue() != null ? avgMarkField.getValue() : 0.0);
+                    // studentNumber y avgMark se generan automáticamente
 
                     personDTO = studentDTO;
                 } else {
@@ -344,7 +336,6 @@ public class CreateUserView extends VerticalLayout {
         nameField.clear();
         emailField.clear();
         phoneField.clear();
-        avgMarkField.clear();
         salaryField.clear();
     }
 }
