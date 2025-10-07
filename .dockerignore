@@ -1,0 +1,45 @@
+# Ignorar archivos innecesarios al construir la imagen Docker
+
+# Archivos de construcción
+target/
+node_modules/
+.vaadin/
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Documentación
+*.md
+README.md
+ARCHITECTURE.md
+DATA_BINDING_EXPLANATION.md
+DTO_REFACTORING.md
+MIGRATION_SUMMARY.md
+QUICK_START.md
+VAADIN_MIGRATION.md
+
+# Logs
+*.log
+
+# Archivos temporales
+*.tmp
+*.bak
+*.swp
+*~
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore

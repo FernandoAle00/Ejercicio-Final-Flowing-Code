@@ -24,8 +24,8 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
     private final PasswordField passwordField;
     private final Button loginButton;
 
-    public LoginView() {
-        this.authService = new AuthService();
+    public LoginView(AuthService authService) {
+        this.authService = authService;
         
         setSizeFull();
         setJustifyContentMode(JustifyContentMode.CENTER);
