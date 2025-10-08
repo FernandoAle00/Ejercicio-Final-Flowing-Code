@@ -17,6 +17,7 @@ import com.example.ejerciciofinal.dtos.CreateUserDTO.PersonDTO;
 import com.example.ejerciciofinal.dtos.CreateUserDTO.ProfessorDTO;
 import com.example.ejerciciofinal.dtos.CreateUserDTO.StudentDTO;
 import com.example.ejerciciofinal.dtos.ResponseUserDTO;
+import com.example.ejerciciofinal.dtos.StudentSearchDTO;
 import com.example.ejerciciofinal.mappers.DTOMapper;
 import com.example.ejerciciofinal.model.Address;
 import com.example.ejerciciofinal.model.Person;
@@ -24,6 +25,8 @@ import com.example.ejerciciofinal.model.Professor;
 import com.example.ejerciciofinal.model.Student;
 import com.example.ejerciciofinal.model.User;
 import com.example.ejerciciofinal.repository.PersonRepository;
+import com.example.ejerciciofinal.repository.ProfessorRepository;
+import com.example.ejerciciofinal.repository.StudentRepository;
 import com.example.ejerciciofinal.repository.UserRepository;
 
 @Service
@@ -35,6 +38,12 @@ public class UserService {
     @Autowired
     private PersonRepository personRepository;
 
+    @Autowired
+    private StudentRepository studentRepository;
+
+    @Autowired
+    private ProfessorRepository professorRepository;
+
     @Transactional
     public ResponseUserDTO createUser(CreateUserDTO userDTO) {
 
@@ -45,14 +54,21 @@ public class UserService {
         }
 
         Person person = null;
+        
+        // Solo crear Person si NO es ADMIN
         if (userDTO.getPerson() != null) {
             person = createPersonFromDTO(userDTO.getPerson());
+            
+            // Validar que el email no esté duplicado
+            if (personRepository.existsByEmail(person.getEmail())) {
+                throw new IllegalArgumentException("El email ya está registrado");
+            }
         }
 
-        // Crear User
+        // Crear User con contraseña en texto plano (en producción usar BCrypt)
         User user = new User(
                 userDTO.getUserName(),
-                userDTO.getPassword(), // En un caso real, la contraseña debería ser hasheada
+                userDTO.getPassword(),
                 userDTO.getRole(),
                 person
         );
@@ -98,12 +114,13 @@ public class UserService {
                 );
             }
             case ProfessorDTO professorDTO -> {
+                Double salary = professorDTO.getSalary() != null ? professorDTO.getSalary() : 0.0;
                 return new Professor(
                         personDTO.getName(),
                         personDTO.getPhone(),
                         personDTO.getEmail(),
                         getAddressFromAddressDTO(personDTO.getAddress()),
-                        professorDTO.getSalary() != null ? professorDTO.getSalary() : 0.0
+                        salary
                 );
             }
             default -> {
@@ -124,7 +141,7 @@ public class UserService {
         );
     }
 
-    public Person getPersonById(Long id){
+    public Person getPersonById(Long id) {
         return userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("No se encontró el usuario con ID: " + id)).getPerson();
     }
 
@@ -134,6 +151,7 @@ public class UserService {
 
     /**
      * Obtiene todos los usuarios de tipo Person paginados
+     *
      * @param pageIndex Índice de la página (comienza en 0)
      * @param pageSize Cantidad de registros por página
      * @return Page<Person> con los usuarios paginados
@@ -146,6 +164,7 @@ public class UserService {
 
     /**
      * Cuenta el total de personas registradas
+     *
      * @return Total de registros Person
      */
     @Transactional(readOnly = true)
@@ -153,4 +172,49 @@ public class UserService {
         return personRepository.count();
     }
 
+    /*
+     * Obtiene todosl os estudiantes para búsqueda (solo id, nombre y número de estudiante)
+     * query optimizada que no trae todos los campos student
+     * @return Lista de StudentSearchDTO con 3 campos, id, name, studentNumber
+     */
+    @Transactional(readOnly = true)
+    public List<StudentSearchDTO> getAllStudentsForSearch() {
+        return studentRepository.findAllStudentsForSearch();
+    }
+
+    /*
+     * Obtiene un estudiante completo por ID (con todos sus datos)
+     * @param id del estudiante
+     * @return Student completo
+     */
+    @Transactional(readOnly = true)
+    public Student getStudentById(Long id) {
+        return studentRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("No se encontró el estudiante con ID: " + id)
+                );
+    }
+
+    /*
+     * Chequea la condición de que un estudiante puede inscribirse a un curso
+     * @param studentId ID del estudiante, courseId ID del curso
+     * @return true si puede asignarse, false si no
+     */
+    @Transactional(readOnly = true)
+    public boolean canAssignStudentToCourse(Long studentId, Long courseId) {
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new IllegalArgumentException("No se encontró el estudiante con ID: " + studentId));
+        return student.getSeats().stream()
+                .noneMatch(seat -> seat.getCourse().getId().equals(courseId));
+    }
+
+    /*
+     * Obtiene un profesor completo por ID (con todos sus datos y cursos)
+     * @param id del profesor
+     * @return Professor completo
+     */
+    @Transactional(readOnly = true)
+    public Professor getProfessorById(Long id) {
+        return professorRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("No se encontró el profesor con ID: " + id));
+    }
 }

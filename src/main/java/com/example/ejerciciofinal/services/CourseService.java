@@ -26,6 +26,7 @@ import com.example.ejerciciofinal.model.Seat;
 import com.example.ejerciciofinal.model.Student;
 import com.example.ejerciciofinal.repository.CourseRepository;
 import com.example.ejerciciofinal.repository.ProfessorRepository;
+import com.example.ejerciciofinal.repository.StudentRepository;
 
 @Service
 public class CourseService {
@@ -38,6 +39,9 @@ public class CourseService {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private StudentRepository studentRepository;
 
     @Transactional
     public ResponseCourseDTO createCourse(CreateCourseDTO courseDTO) {
@@ -144,6 +148,7 @@ public class CourseService {
         }
     }
 
+    @Transactional
     public ResponseSeatDTO setMarkToStudentInCourse(Long courseId, Long studentId, Double mark){
 
         Optional<Course> courseOpt = courseRepository.findById(courseId);
@@ -153,7 +158,7 @@ public class CourseService {
 
         Course course = courseOpt.get();
         Optional<Seat> seatOpt = course.getSeats().stream()
-                .filter(seat -> seat.getStudent().getId().equals(studentId))
+                .filter(seat -> seat.getStudent() != null && seat.getStudent().getId().equals(studentId))
                 .findFirst();
         
         if(seatOpt.isEmpty()){
@@ -162,6 +167,12 @@ public class CourseService {
         
         Seat seat = seatOpt.get();
         seat.setMark(mark);
+        
+        // Recalcular y actualizar el promedio del estudiante
+        Student student = seat.getStudent();
+        Double newAvgMark = student.calculateAvgMark();
+        student.setAvgMark(newAvgMark);
+        
         courseRepository.save(course);
 
         return new ResponseSeatDTO(
@@ -198,5 +209,63 @@ public class CourseService {
             return DTOMapper.toCourseDTOs(coursesOpt.get());
         }
         else return null;
+    }
+
+    /*
+     * Función para asignar un estudiante a un curso
+     * @param studentId ID del estudiante, courseId ID del curso
+     */
+    @Transactional
+    public void assignStudentToCourse(Long studentId, Long courseId) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new IllegalArgumentException("No se encontró el curso con ID: " + courseId));
+        
+        // Obtener estudiante directamente del repositorio de estudiantes (con eager loading)
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new IllegalArgumentException("No se encontró el estudiante con ID: " + studentId));
+        
+        // Verificar si el estudiante ya está asignado al curso
+        boolean alreadyAssigned = course.getSeats().stream()
+                .anyMatch(seat -> seat.getStudent() != null && seat.getStudent().getId().equals(studentId));
+        if (alreadyAssigned) {
+            throw new IllegalArgumentException("El estudiante con ID: " + studentId + " ya está asignado al curso con ID: " + courseId);
+        }
+        // Verificar si hay cupos disponibles
+        Optional<Seat> availableSeatOpt = course.getSeats().stream()
+                .filter(seat -> seat.getStudent() == null)
+                .findFirst();
+        if (availableSeatOpt.isEmpty()) {
+            throw new IllegalArgumentException("No hay cupos disponibles en el curso con ID: " + courseId);
+        }
+        // Asignar el estudiante al cupo disponible
+        Seat availableSeat = availableSeatOpt.get();
+        availableSeat.setStudent(student);
+        student.getSeats().add(availableSeat);
+        courseRepository.save(course);
+    }
+
+    /*
+     * Permite obtener a los students que están asignados a un curso específico
+     * Retorna estudiantes con seats y seats.course cargados eager para evitar LazyInitializationException
+     */
+    @Transactional(readOnly = true)
+    public List<Student> getStudentsInCourse(Long courseId){
+        Optional<Course> courseOpt = courseRepository.findById(courseId);
+        if(courseOpt.isEmpty()){
+            throw new IllegalArgumentException("No se encontró el curso con ID: " + courseId);
+        }
+        Course course = courseOpt.get();
+        
+        // Obtener IDs de estudiantes del curso
+        List<Long> studentIds = course.getSeats().stream()
+                .filter(seat -> seat.getStudent() != null)
+                .map(seat -> seat.getStudent().getId())
+                .toList();
+        
+        // Cargar estudiantes completos con eager loading de seats y seats.course
+        return studentIds.stream()
+                .map(id -> studentRepository.findById(id).orElse(null))
+                .filter(student -> student != null)
+                .toList();
     }
 }

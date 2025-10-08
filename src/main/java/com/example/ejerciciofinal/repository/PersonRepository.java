@@ -29,4 +29,9 @@ public interface PersonRepository extends JpaRepository<Person, Long> {
     @Query("SELECT p FROM Professor p")
     @EntityGraph(attributePaths = {"address"})
     List<Professor> findAllProfessors();
+
+    /**
+     * Verifica si existe una persona con el email dado
+     */
+    boolean existsByEmail(String email);
 }

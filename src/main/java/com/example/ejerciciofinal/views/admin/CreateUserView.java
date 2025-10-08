@@ -6,6 +6,8 @@ import com.example.ejerciciofinal.dtos.CreateUserDTO.PersonDTO;
 import com.example.ejerciciofinal.dtos.CreateUserDTO.ProfessorDTO;
 import com.example.ejerciciofinal.dtos.CreateUserDTO.StudentDTO;
 import com.example.ejerciciofinal.model.Role;
+import com.example.ejerciciofinal.security.AdminOnly;
+import com.example.ejerciciofinal.security.SecureView;
 import com.example.ejerciciofinal.services.UserService;
 import com.example.ejerciciofinal.views.MainLayout;
 import com.vaadin.flow.component.button.Button;
@@ -25,9 +27,10 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
+@AdminOnly
 @Route(value = "admin/create-user", layout = MainLayout.class)
 @PageTitle("Crear Usuario | Sistema Académico")
-public class CreateUserView extends VerticalLayout {
+public class CreateUserView extends SecureView {
 
     private final UserService userService;
 
