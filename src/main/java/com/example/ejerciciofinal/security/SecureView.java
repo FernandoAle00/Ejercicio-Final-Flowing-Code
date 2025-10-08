@@ -9,26 +9,46 @@ import com.vaadin.flow.router.BeforeEnterObserver;
 
 /**
  * Clase base para vistas que requieren autenticación y rol específico
- * Implementa la lógica de seguridad común
+ * Implementa la lógica de seguridad común para ADMIN, PROFESSOR y STUDENT
  */
 public abstract class SecureView extends VerticalLayout implements BeforeEnterObserver {
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        // Verificar si hay usuario autenticado
+        // 1. Verificar si hay usuario autenticado
         if (!AuthService.isAuthenticated()) {
             // Redirigir a login si no está autenticado
             event.rerouteTo(LoginView.class);
             return;
         }
 
-        // Verificar si la vista requiere rol ADMIN
-        if (this.getClass().isAnnotationPresent(AdminOnly.class)) {
-            Role currentRole = AuthService.getCurrentRole();
-            
+        // 2. Obtener el rol actual del usuario
+        Role currentRole = AuthService.getCurrentRole();
+        
+        // 3. Verificar anotaciones de rol específico usando REFLEXIÓN
+        Class<?> viewClass = this.getClass();
+        
+        // Verificar si requiere rol ADMIN
+        if (viewClass.isAnnotationPresent(AdminOnly.class)) {
             if (currentRole != Role.ADMIN) {
-                // Redirigir a dashboard si no es ADMIN
                 event.rerouteTo(DashboardView.class);
+                return;
+            }
+        }
+        
+        // Verificar si requiere rol PROFESSOR
+        if (viewClass.isAnnotationPresent(ProfessorOnly.class)) {
+            if (currentRole != Role.PROFESSOR) {
+                event.rerouteTo(DashboardView.class);
+                return;
+            }
+        }
+        
+        // Verificar si requiere rol STUDENT
+        if (viewClass.isAnnotationPresent(StudentOnly.class)) {
+            if (currentRole != Role.STUDENT) {
+                event.rerouteTo(DashboardView.class);
+                return;
             }
         }
     }
