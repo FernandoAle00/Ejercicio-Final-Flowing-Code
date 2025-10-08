@@ -54,14 +54,21 @@ public class UserService {
         }
 
         Person person = null;
+        
+        // Solo crear Person si NO es ADMIN
         if (userDTO.getPerson() != null) {
             person = createPersonFromDTO(userDTO.getPerson());
+            
+            // Validar que el email no esté duplicado
+            if (personRepository.existsByEmail(person.getEmail())) {
+                throw new IllegalArgumentException("El email ya está registrado");
+            }
         }
 
-        // Crear User
+        // Crear User con contraseña en texto plano (en producción usar BCrypt)
         User user = new User(
                 userDTO.getUserName(),
-                userDTO.getPassword(), // En un caso real, la contraseña debería ser hasheada
+                userDTO.getPassword(),
                 userDTO.getRole(),
                 person
         );
@@ -107,12 +114,13 @@ public class UserService {
                 );
             }
             case ProfessorDTO professorDTO -> {
+                Double salary = professorDTO.getSalary() != null ? professorDTO.getSalary() : 0.0;
                 return new Professor(
                         personDTO.getName(),
                         personDTO.getPhone(),
                         personDTO.getEmail(),
                         getAddressFromAddressDTO(personDTO.getAddress()),
-                        professorDTO.getSalary() != null ? professorDTO.getSalary() : 0.0
+                        salary
                 );
             }
             default -> {

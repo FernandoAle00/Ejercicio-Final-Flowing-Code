@@ -1,6 +1,5 @@
 package com.example.ejerciciofinal.views.admin;
 
-import org.springframework.cglib.transform.impl.AddPropertyTransformer;
 import org.springframework.data.domain.Page;
 
 import com.example.ejerciciofinal.model.Course;
@@ -8,6 +7,8 @@ import com.example.ejerciciofinal.model.Person;
 import com.example.ejerciciofinal.model.Professor;
 import com.example.ejerciciofinal.model.Seat;
 import com.example.ejerciciofinal.model.Student;
+import com.example.ejerciciofinal.security.AdminOnly;
+import com.example.ejerciciofinal.security.SecureView;
 import com.example.ejerciciofinal.services.UserService;
 import com.example.ejerciciofinal.views.MainLayout;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -23,9 +24,10 @@ import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
+@AdminOnly
 @Route(value = "admin/list-users", layout = MainLayout.class)
 @PageTitle("Lista de Usuarios | Gestión de Usuarios")
-public class ListUsersView extends VerticalLayout {
+public class ListUsersView extends SecureView {
 
     private final UserService userService;
     private final Grid<Person> grid = new Grid<>(Person.class, false);

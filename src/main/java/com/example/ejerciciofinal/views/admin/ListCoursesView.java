@@ -3,6 +3,8 @@ package com.example.ejerciciofinal.views.admin;
 import org.springframework.data.domain.Page;
 
 import com.example.ejerciciofinal.model.Course;
+import com.example.ejerciciofinal.security.AdminOnly;
+import com.example.ejerciciofinal.security.SecureView;
 import com.example.ejerciciofinal.services.CourseService;
 import com.example.ejerciciofinal.views.MainLayout;
 import com.vaadin.flow.component.grid.Grid;
@@ -14,9 +16,10 @@ import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
+@AdminOnly
 @Route(value = "admin/list-courses", layout = MainLayout.class)
 @PageTitle("Listado de Cursos | Sistema Académico")
-public class ListCoursesView extends VerticalLayout {
+public class ListCoursesView extends SecureView {
 
     private final CourseService courseService;
     private final Grid<Course> grid = new Grid<>(Course.class, false);

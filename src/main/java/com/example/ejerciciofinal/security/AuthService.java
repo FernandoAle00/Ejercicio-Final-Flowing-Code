@@ -1,58 +1,56 @@
 package com.example.ejerciciofinal.security;
 
 import com.example.ejerciciofinal.model.Role;
+import com.example.ejerciciofinal.model.User;
+import com.example.ejerciciofinal.repository.UserRepository;
 import com.vaadin.flow.server.VaadinSession;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 /**
- * Servicio de autenticación con usuarios mockeados
+ * Servicio de autenticación con usuarios de la base de datos
  */
 @Service
 public class AuthService {
 
-    // Usuarios mockeados: username -> password, role
-    private static final java.util.Map<String, UserCredentials> MOCK_USERS = java.util.Map.of(
-        "admin", new UserCredentials("admin123", Role.ADMIN),
-        "student", new UserCredentials("student123", Role.STUDENT),
-        "professor", new UserCredentials("professor123", Role.PROFESSOR)
-    );
-
-    private static final String SESSION_USER_KEY = "authenticated_user";
+    private static final String SESSION_USER_ID_KEY = "authenticated_user_id";
+    private static final String SESSION_USERNAME_KEY = "authenticated_username";
     private static final String SESSION_ROLE_KEY = "user_role";
 
-    public AuthService() {
-        System.out.println("=== AuthService inicializado ===");
-        System.out.println("Usuarios disponibles: " + MOCK_USERS.keySet());
-        MOCK_USERS.forEach((user, creds) -> {
-            System.out.println("  - " + user + " -> password: " + creds.password + ", role: " + creds.role);
-        });
+    private final UserRepository userRepository;
+
+    public AuthService(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     /**
-     * Autentica un usuario con credenciales mockeadas
+     * Autentica un usuario contra la base de datos
      */
+    @Transactional(readOnly = true)
     public boolean authenticate(String username, String password) {
-
         if (username == null || password == null) {
-            System.out.println("Username o password es null");
             return false;
         }
 
-        String usernameLower = username.toLowerCase().trim();
+        Optional<User> userOpt = userRepository.findByUserName(username.trim());
         
-        UserCredentials credentials = MOCK_USERS.get(usernameLower);
-        
-        if (credentials != null) {
-            
-            if (credentials.password.equals(password)) {
-                VaadinSession session = VaadinSession.getCurrent();
-                
-                if (session != null) {
-                    session.setAttribute(SESSION_USER_KEY, username);
-                    session.setAttribute(SESSION_ROLE_KEY, credentials.role);
+        if (userOpt.isEmpty()) {
+            return false;
+        }
 
-                    return true;
-                }
+        User user = userOpt.get();
+        
+        // Comparación simple de contraseña (en producción usar BCrypt)
+        if (user.getPassword().equals(password)) {
+            VaadinSession session = VaadinSession.getCurrent();
+            
+            if (session != null) {
+                session.setAttribute(SESSION_USER_ID_KEY, user.getId());
+                session.setAttribute(SESSION_USERNAME_KEY, user.getUserName());
+                session.setAttribute(SESSION_ROLE_KEY, user.getRole());
+                return true;
             }
         }
 
@@ -64,15 +62,23 @@ public class AuthService {
      */
     public static boolean isAuthenticated() {
         VaadinSession session = VaadinSession.getCurrent();
-        return session != null && session.getAttribute(SESSION_USER_KEY) != null;
+        return session != null && session.getAttribute(SESSION_USER_ID_KEY) != null;
     }
 
     /**
-     * Obtiene el usuario actual
+     * Obtiene el ID del usuario actual
      */
-    public static String getCurrentUser() {
+    public static Long getCurrentUserId() {
         VaadinSession session = VaadinSession.getCurrent();
-        return session != null ? (String) session.getAttribute(SESSION_USER_KEY) : null;
+        return session != null ? (Long) session.getAttribute(SESSION_USER_ID_KEY) : null;
+    }
+
+    /**
+     * Obtiene el username del usuario actual
+     */
+    public static String getCurrentUsername() {
+        VaadinSession session = VaadinSession.getCurrent();
+        return session != null ? (String) session.getAttribute(SESSION_USERNAME_KEY) : null;
     }
 
     /**
@@ -89,22 +95,10 @@ public class AuthService {
     public static void logout() {
         VaadinSession session = VaadinSession.getCurrent();
         if (session != null) {
-            session.setAttribute(SESSION_USER_KEY, null);
+            session.setAttribute(SESSION_USER_ID_KEY, null);
+            session.setAttribute(SESSION_USERNAME_KEY, null);
             session.setAttribute(SESSION_ROLE_KEY, null);
             session.close();
-        }
-    }
-
-    /**
-     * Clase interna para almacenar credenciales
-     */
-    private static class UserCredentials {
-        final String password;
-        final Role role;
-
-        UserCredentials(String password, Role role) {
-            this.password = password;
-            this.role = role;
         }
     }
 }

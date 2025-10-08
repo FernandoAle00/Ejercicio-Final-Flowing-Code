@@ -5,12 +5,12 @@ import java.util.List;
 import com.example.ejerciciofinal.dtos.CourseDTO;
 import com.example.ejerciciofinal.dtos.StudentSearchDTO;
 import com.example.ejerciciofinal.model.Student;
+import com.example.ejerciciofinal.security.AdminOnly;
+import com.example.ejerciciofinal.security.SecureView;
 import com.example.ejerciciofinal.services.CourseService;
 import com.example.ejerciciofinal.services.UserService;
 import com.example.ejerciciofinal.views.MainLayout;
-import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.charts.model.Label;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
@@ -23,9 +23,10 @@ import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
+@AdminOnly
 @Route(value = "admin/assign-students", layout = MainLayout.class)
 @PageTitle("Asignar Estudiante a Curso | Sistema Académico")
-public class AssignStudentToCourseView extends VerticalLayout {
+public class AssignStudentToCourseView extends SecureView {
 
     private final UserService userService;
     private final CourseService courseService;
@@ -40,6 +41,10 @@ public class AssignStudentToCourseView extends VerticalLayout {
     private final ComboBox<CourseDTO> courseComboBox = new ComboBox<>("Curso");
 
     private ListDataProvider<StudentSearchDTO> studentDataProvider;
+    
+    // Variables para rastrear selecciones previas
+    private CourseDTO previousCourse = null;
+    private StudentSearchDTO previousStudent = null;
 
     public AssignStudentToCourseView(UserService userService, CourseService courseService) {
         this.userService = userService;
@@ -80,10 +85,16 @@ public class AssignStudentToCourseView extends VerticalLayout {
                     courseService.assignStudentToCourse(selectedStudent.getId(), selectedCourse.getId());
                     canAssignSpan.setText("Estudiante asignado correctamente al curso.");
                     canAssignSpan.getStyle().set("color", "green").set("font-weight", "bold");
+                    canAssignSpan.setVisible(true);
                     assignButton.setEnabled(false);
+                    
+                    // NO resetear previousCourse ni previousStudent aquí
+                    // Esto permite mantener los detalles visibles después de asignar
+                    
                 } catch (IllegalArgumentException ex) {
                     canAssignSpan.setText("Error al asignar estudiante: " + ex.getMessage());
                     canAssignSpan.getStyle().set("color", "red").set("font-weight", "bold");
+                    canAssignSpan.setVisible(true);
                     assignButton.setEnabled(false);
                 }
             }});
@@ -91,11 +102,35 @@ public class AssignStudentToCourseView extends VerticalLayout {
     }
 
     private void updateForm(CourseDTO courseDTO) {
+        // Solo limpiar si realmente cambió el curso (comparando IDs)
+        boolean courseChanged = false;
+        
+        if (previousCourse == null && courseDTO != null) {
+            courseChanged = true; // Primera selección
+        } else if (previousCourse != null && courseDTO == null) {
+            courseChanged = true; // Se limpió la selección
+        } else if (previousCourse != null && courseDTO != null) {
+            courseChanged = !previousCourse.getId().equals(courseDTO.getId()); // Comparar por ID
+        }
+        
         if (courseDTO != null) {
             studentSection.setVisible(true);
         } else {
             studentSection.setVisible(false);
         }
+        
+        // Solo limpiar campos si el curso realmente cambió
+        if (courseChanged) {
+            studentComboBox.clear();
+            canAssignSpan.setText("");
+            canAssignSpan.setVisible(false);
+            studentDetailsSection.removeAll();
+            studentDetailsSection.setVisible(false);
+            assignButton.setEnabled(false);
+        }
+        
+        // Actualizar el curso anterior
+        previousCourse = courseDTO;
     }
 
     private void configureStudentComboBox() {
@@ -122,13 +157,18 @@ public class AssignStudentToCourseView extends VerticalLayout {
 
         // Listener para cuando se seleccione un estudiante
         studentComboBox.addValueChangeListener(e -> {
-            if (e.getValue() != null) {
-                showStudentDetails(e.getValue().getId());
-                checkIfCanAssign(e.getValue().getId(), courseComboBox.getValue().getId());
+            StudentSearchDTO selectedStudent = e.getValue();
+            
+            if (selectedStudent != null) {
+                showStudentDetails(selectedStudent.getId());
+                checkIfCanAssign(selectedStudent.getId(), courseComboBox.getValue().getId());
             } else {
                 studentDetailsSection.removeAll();
-                studentDetailsSection.add(new Text("No hay estudiante seleccionado"));
+                studentDetailsSection.setVisible(false);
             }
+            
+            // Actualizar estudiante anterior
+            previousStudent = selectedStudent;
         });
     }
 
@@ -184,6 +224,7 @@ public class AssignStudentToCourseView extends VerticalLayout {
             }
 
             studentDetailsSection.add(detailsTitle, detailsLayout);
+            studentDetailsSection.setVisible(true); // ← AGREGAR ESTA LÍNEA
 
         } catch (IllegalArgumentException e) {
             // Mostrar error si no se encuentra el estudiante
@@ -192,6 +233,7 @@ public class AssignStudentToCourseView extends VerticalLayout {
                     .set("color", "red")
                     .set("font-weight", "bold");
             studentDetailsSection.add(errorMsg);
+            studentDetailsSection.setVisible(true); // ← AGREGAR ESTA LÍNEA TAMBIÉN
         }
 
     }
@@ -224,6 +266,7 @@ public class AssignStudentToCourseView extends VerticalLayout {
         if (selectedCourse == null) {
             canAssignSpan.setText("Por favor, seleccione un curso primero.");
             canAssignSpan.getStyle().set("color", "red").set("font-weight", "bold");
+            canAssignSpan.setVisible(true); // ← AGREGAR ESTA LÍNEA
             assignButton.setEnabled(false);
             return;
         }
@@ -233,14 +276,18 @@ public class AssignStudentToCourseView extends VerticalLayout {
             if (canAssign) {
                 canAssignSpan.setText("El estudiante puede ser asignado a este curso.");
                 canAssignSpan.getStyle().set("color", "green").set("font-weight", "bold");
+                canAssignSpan.setVisible(true); // ← AGREGAR ESTA LÍNEA
                 assignButton.setEnabled(true);
             } else {
                 canAssignSpan.setText("El estudiante NO puede ser asignado a este curso (cupo lleno o ya inscrito).");
                 canAssignSpan.getStyle().set("color", "red").set("font-weight", "bold");
+                canAssignSpan.setVisible(true); // ← AGREGAR ESTA LÍNEA
                 assignButton.setEnabled(false);
             }
         } catch (IllegalArgumentException e) {
             canAssignSpan.setText("Error: " + e.getMessage());
+            canAssignSpan.getStyle().set("color", "red").set("font-weight", "bold");
+            canAssignSpan.setVisible(true); // ← AGREGAR ESTA LÍNEA
         }
     }
 }

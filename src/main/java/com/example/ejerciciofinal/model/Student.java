@@ -23,7 +23,7 @@ public class Student extends Person {
         super(name, phone, email, address);
         this.studentNumber = UUID.randomUUID(); // Generar UUID automáticamente
         this.seats = seats;
-        this.avgMark = this.calculateAvgMark(seats);
+        this.avgMark = this.calculateAvgMark();
     }
 
     public UUID getStudentNumber() {
@@ -44,21 +44,31 @@ public class Student extends Person {
 
     public void setSeats(Set<Seat> seats) {
         this.seats = seats;
-        this.avgMark = this.calculateAvgMark(seats);
+        this.avgMark = this.calculateAvgMark();
     }
 
     protected Student() { // To keep Hibernate happy
     }
 
-    private Double calculateAvgMark(Set<Seat> seats) {
-        if (seats.isEmpty()) {
+    public Double calculateAvgMark() {
+        if (this.seats.isEmpty()) {
             return 0.0;
-        } else {
-            Double total = 0.0;
-            for (Seat seat : seats) {
-                total += seat.getMark();
-            }
-            return total / seats.size();
         }
+        
+        // Filtrar solo los seats que tienen nota (mark != null)
+        long seatsWithMark = this.seats.stream()
+            .filter(seat -> seat.getMark() != null)
+            .count();
+        
+        if (seatsWithMark == 0) {
+            return 0.0;
+        }
+        
+        Double total = this.seats.stream()
+            .filter(seat -> seat.getMark() != null)
+            .mapToDouble(Seat::getMark)
+            .sum();
+        
+        return total / seatsWithMark;
     }
 }

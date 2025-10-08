@@ -71,10 +71,10 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
         }
         
         if (authService.authenticate(username, password)) {
-            showSuccess("Bienvenido " + username);
+            showSuccess("Bienvenido, " + username);
             getUI().ifPresent(ui -> ui.navigate(""));
         } else {
-            showError("Credenciales incorrectas");
+            showError("Usuario o contraseña incorrectos");
             passwordField.clear();
             passwordField.focus();
         }

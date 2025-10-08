@@ -18,7 +18,7 @@ public class DashboardView extends VerticalLayout {
         setPadding(true);
         setSpacing(true);
         
-        String username = AuthService.getCurrentUser();
+        String username = AuthService.getCurrentUsername();
         Role role = AuthService.getCurrentRole();
         
         H1 title = new H1("Bienvenido al Sistema Académico");

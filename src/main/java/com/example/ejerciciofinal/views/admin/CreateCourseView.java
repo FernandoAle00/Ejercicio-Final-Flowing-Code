@@ -2,6 +2,8 @@ package com.example.ejerciciofinal.views.admin;
 
 import com.example.ejerciciofinal.dtos.CreateCourseDTO;
 import com.example.ejerciciofinal.dtos.CreateUserDTO.ProfessorDTO;
+import com.example.ejerciciofinal.security.AdminOnly;
+import com.example.ejerciciofinal.security.SecureView;
 import com.example.ejerciciofinal.services.CourseService;
 import com.example.ejerciciofinal.services.UserService;
 import com.example.ejerciciofinal.views.MainLayout;
@@ -18,9 +20,10 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
+@AdminOnly
 @Route(value = "admin/create-course", layout = MainLayout.class)
 @PageTitle("Crear Curso | Sistema Académico")
-public class CreateCourseView extends VerticalLayout {
+public class CreateCourseView extends SecureView {
 
     private final CourseService courseService;
     private final UserService userService;

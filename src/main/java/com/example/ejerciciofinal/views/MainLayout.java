@@ -45,7 +45,7 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
             .set("font-weight", "600")
             .set("margin", "0");
         
-        String username = AuthService.getCurrentUser();
+        String username = AuthService.getCurrentUsername();
         Role role = AuthService.getCurrentRole();
         
         // Si no hay usuario autenticado, solo mostrar título
@@ -120,7 +120,8 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
         coursesMenu.addItem(new SideNavItem("Crear Curso", "admin/create-course", VaadinIcon.PLUS.create()));
         coursesMenu.addItem(new SideNavItem("Listar Cursos", "admin/list-courses", VaadinIcon.LIST.create()));
         coursesMenu.addItem(new SideNavItem("Asignar Estudiantes", "admin/assign-students", VaadinIcon.GROUP.create()));
-        
+        coursesMenu.addItem(new SideNavItem("Asignar Notas", "admin/assign-mark", VaadinIcon.EDIT.create()));
+
         nav.addItem(usersMenu);
         nav.addItem(coursesMenu);
     }

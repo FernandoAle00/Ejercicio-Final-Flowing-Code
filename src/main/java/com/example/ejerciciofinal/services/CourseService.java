@@ -148,6 +148,7 @@ public class CourseService {
         }
     }
 
+    @Transactional
     public ResponseSeatDTO setMarkToStudentInCourse(Long courseId, Long studentId, Double mark){
 
         Optional<Course> courseOpt = courseRepository.findById(courseId);
@@ -157,7 +158,7 @@ public class CourseService {
 
         Course course = courseOpt.get();
         Optional<Seat> seatOpt = course.getSeats().stream()
-                .filter(seat -> seat.getStudent().getId().equals(studentId))
+                .filter(seat -> seat.getStudent() != null && seat.getStudent().getId().equals(studentId))
                 .findFirst();
         
         if(seatOpt.isEmpty()){
@@ -166,6 +167,12 @@ public class CourseService {
         
         Seat seat = seatOpt.get();
         seat.setMark(mark);
+        
+        // Recalcular y actualizar el promedio del estudiante
+        Student student = seat.getStudent();
+        Double newAvgMark = student.calculateAvgMark();
+        student.setAvgMark(newAvgMark);
+        
         courseRepository.save(course);
 
         return new ResponseSeatDTO(
@@ -235,5 +242,30 @@ public class CourseService {
         availableSeat.setStudent(student);
         student.getSeats().add(availableSeat);
         courseRepository.save(course);
+    }
+
+    /*
+     * Permite obtener a los students que están asignados a un curso específico
+     * Retorna estudiantes con seats y seats.course cargados eager para evitar LazyInitializationException
+     */
+    @Transactional(readOnly = true)
+    public List<Student> getStudentsInCourse(Long courseId){
+        Optional<Course> courseOpt = courseRepository.findById(courseId);
+        if(courseOpt.isEmpty()){
+            throw new IllegalArgumentException("No se encontró el curso con ID: " + courseId);
+        }
+        Course course = courseOpt.get();
+        
+        // Obtener IDs de estudiantes del curso
+        List<Long> studentIds = course.getSeats().stream()
+                .filter(seat -> seat.getStudent() != null)
+                .map(seat -> seat.getStudent().getId())
+                .toList();
+        
+        // Cargar estudiantes completos con eager loading de seats y seats.course
+        return studentIds.stream()
+                .map(id -> studentRepository.findById(id).orElse(null))
+                .filter(student -> student != null)
+                .toList();
     }
 }
