@@ -26,6 +26,7 @@ import com.example.ejerciciofinal.model.Seat;
 import com.example.ejerciciofinal.model.Student;
 import com.example.ejerciciofinal.repository.CourseRepository;
 import com.example.ejerciciofinal.repository.ProfessorRepository;
+import com.example.ejerciciofinal.repository.StudentRepository;
 
 @Service
 public class CourseService {
@@ -38,6 +39,9 @@ public class CourseService {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private StudentRepository studentRepository;
 
     @Transactional
     public ResponseCourseDTO createCourse(CreateCourseDTO courseDTO) {
@@ -198,5 +202,38 @@ public class CourseService {
             return DTOMapper.toCourseDTOs(coursesOpt.get());
         }
         else return null;
+    }
+
+    /*
+     * Función para asignar un estudiante a un curso
+     * @param studentId ID del estudiante, courseId ID del curso
+     */
+    @Transactional
+    public void assignStudentToCourse(Long studentId, Long courseId) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new IllegalArgumentException("No se encontró el curso con ID: " + courseId));
+        
+        // Obtener estudiante directamente del repositorio de estudiantes (con eager loading)
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new IllegalArgumentException("No se encontró el estudiante con ID: " + studentId));
+        
+        // Verificar si el estudiante ya está asignado al curso
+        boolean alreadyAssigned = course.getSeats().stream()
+                .anyMatch(seat -> seat.getStudent() != null && seat.getStudent().getId().equals(studentId));
+        if (alreadyAssigned) {
+            throw new IllegalArgumentException("El estudiante con ID: " + studentId + " ya está asignado al curso con ID: " + courseId);
+        }
+        // Verificar si hay cupos disponibles
+        Optional<Seat> availableSeatOpt = course.getSeats().stream()
+                .filter(seat -> seat.getStudent() == null)
+                .findFirst();
+        if (availableSeatOpt.isEmpty()) {
+            throw new IllegalArgumentException("No hay cupos disponibles en el curso con ID: " + courseId);
+        }
+        // Asignar el estudiante al cupo disponible
+        Seat availableSeat = availableSeatOpt.get();
+        availableSeat.setStudent(student);
+        student.getSeats().add(availableSeat);
+        courseRepository.save(course);
     }
 }

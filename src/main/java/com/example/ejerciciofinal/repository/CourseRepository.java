@@ -20,19 +20,19 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     
     /**
      * Obtiene todos los cursos paginados con Professor y Seats cargados (EAGER)
-     * Evita LazyInitializationException al acceder a professor.getName() y seats.size()
+     * Evita LazyInitializationException al acceder a professor.getName(), seats.size() y seats.student
      */
     @Override
-    @EntityGraph(attributePaths = {"professor", "seats"})
+    @EntityGraph(attributePaths = {"professor", "seats", "seats.student"})
     Page<Course> findAll(Pageable pageable);
     
     /**
      * Obtiene todos los cursos (sin paginación) con Professor y Seats cargados (EAGER)
      * Usado para ComboBox y selects donde se necesita la lista completa
-     * Evita LazyInitializationException al acceder a professor.getName() y seats
+     * Evita LazyInitializationException al acceder a professor.getName(), seats y seats.student
      */
     @Override
-    @EntityGraph(attributePaths = {"professor", "seats"})
+    @EntityGraph(attributePaths = {"professor", "seats", "seats.student"})
     List<Course> findAll();
     
 }
