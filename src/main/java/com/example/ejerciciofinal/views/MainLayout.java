@@ -6,6 +6,7 @@ import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -61,8 +62,24 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
             return;
         }
         
+        // Crear menú de usuario con desplegable (solo para STUDENT y PROFESSOR)
         Span userInfo = new Span(username + " (" + role + ")");
-        userInfo.getStyle().set("margin-left", "auto");
+        userInfo.getStyle()
+            .set("margin-left", "auto")
+            .set("cursor", "pointer")
+            .set("padding", "var(--lumo-space-s)")
+            .set("border-radius", "var(--lumo-border-radius-m)");
+        
+        // Solo mostrar menú desplegable para STUDENT y PROFESSOR
+        if (role == Role.STUDENT || role == Role.PROFESSOR) {
+            userInfo.getStyle().set("background", "var(--lumo-contrast-5pct)");
+            
+            ContextMenu contextMenu = new ContextMenu(userInfo);
+            contextMenu.setOpenOnClick(true);
+            contextMenu.addItem("Modificar Datos", event -> {
+                getUI().ifPresent(ui -> ui.navigate("profile/edit"));
+            });
+        }
         
         Button logoutButton = new Button("Cerrar Sesión", VaadinIcon.SIGN_OUT.create());
         logoutButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
