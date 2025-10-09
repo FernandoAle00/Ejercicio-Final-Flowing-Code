@@ -89,6 +89,14 @@ public class AuthService {
         return session != null ? (Role) session.getAttribute(SESSION_ROLE_KEY) : null;
     }
 
+    /*
+     * Obtiene el id del usuario actual
+     */
+    public static Long getCurrentUserIdStatic() {
+        VaadinSession session = VaadinSession.getCurrent();
+        return session != null? (Long) session.getAttribute(SESSION_USER_ID_KEY) : null;
+    }
+
     /**
      * Cierra la sesión del usuario
      */

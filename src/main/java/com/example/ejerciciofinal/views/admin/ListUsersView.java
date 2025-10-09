@@ -242,7 +242,7 @@ public class ListUsersView extends SecureView {
                 courseDetails.getStyle().set("display", "flex").set("flex-direction", "column").set("gap", "5px");
 
                 addDetailRow(courseDetails, "Curso:", seat.getCourse().getName());
-                addDetailRow(courseDetails, "Año:", seat.getYear().toString());
+                addDetailRow(courseDetails, "Año:", String.format("%d", seat.getYear().getYear()));
                 addDetailRow(courseDetails, "Nota:", String.format("%.2f", seat.getMark()));
 
                 courseBox.add(courseDetails);

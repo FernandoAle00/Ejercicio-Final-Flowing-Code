@@ -133,7 +133,6 @@ public class MainLayout extends AppLayout implements BeforeEnterObserver {
 
     private void createStudentMenu() {
         nav.addItem(new SideNavItem("Mis Cursos", "student/courses", VaadinIcon.BOOK.create()));
-        nav.addItem(new SideNavItem("Mis Calificaciones", "student/grades", VaadinIcon.CHART.create()));
     }
 
     /**

@@ -212,6 +212,16 @@ public class CourseService {
     }
 
     /*
+     * Obtiene un curso por el ID
+     */
+    @Transactional(readOnly = true)
+    public CourseDTO getCourseById(Long courseId){
+        return courseRepository.findById(courseId)
+                .map(DTOMapper::toCourseDTO)
+                .orElseThrow(() -> new IllegalArgumentException("No se encontró el curso con ID: " + courseId));
+    }
+
+    /*
      * Función para asignar un estudiante a un curso
      * @param studentId ID del estudiante, courseId ID del curso
      */

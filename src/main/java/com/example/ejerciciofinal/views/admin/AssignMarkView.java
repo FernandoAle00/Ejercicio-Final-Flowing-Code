@@ -13,7 +13,7 @@ import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -26,6 +26,7 @@ public class AssignMarkView extends SecureView {
     private final ComboBox<CourseDTO> courseComboBox = new ComboBox<>("Curso");
     private final ComboBox<Student> studentComboBox = new ComboBox<>("Estudiante");
     private final NumberField markField = new NumberField("Nota");
+    private final Span yearOfSeat = new Span("Año de inscripción");
     private final Button saveButton = new Button("Guardar Nota");
     private final Span statusSpan = new Span();
     
@@ -71,6 +72,19 @@ public class AssignMarkView extends SecureView {
             }
         });
 
+        // Campo de año de en que se tomó el curso, se toma desde Seat, no es editable
+        yearOfSeat.setWidthFull();
+        yearOfSeat.getStyle()
+            .set("padding-top", "5px")
+            .set("padding-bottom", "5px")
+            .set("border-radius", "5px")
+            .set("background-color", "#5da522ff")
+            .set("color", "#ffffffff")
+            .set("font-weight", "bold")
+            .set("text-align", "center")
+            .set("display", "none"); // Inicialmente oculto
+
+
         // Campo de nota
         markField.setWidthFull();
         markField.setMin(0.0);
@@ -93,7 +107,7 @@ public class AssignMarkView extends SecureView {
         saveButton.setEnabled(false);
         saveButton.addClickListener(e -> saveMarkToStudent());
 
-        add(courseComboBox, studentComboBox, statusSpan, markField, saveButton);
+        add(courseComboBox, studentComboBox, yearOfSeat, statusSpan, markField, saveButton);
     }
 
     /**
@@ -159,6 +173,10 @@ public class AssignMarkView extends SecureView {
                     markField.clear();
                 }
                 
+                // Mostrar año de inscripción
+                yearOfSeat.setText(String.format("Año de inscripción: %d", currentSeat.get().getYear().getYear()));
+                yearOfSeat.getStyle().set("display", "block");
+                
                 markField.setEnabled(true);
                 saveButton.setEnabled(true);
             }
@@ -222,5 +240,6 @@ public class AssignMarkView extends SecureView {
         markField.setEnabled(false);
         saveButton.setEnabled(false);
         statusSpan.getStyle().set("display", "none");
+        yearOfSeat.getStyle().set("display", "none");
     }
 }

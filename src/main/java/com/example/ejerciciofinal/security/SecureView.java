@@ -25,7 +25,7 @@ public abstract class SecureView extends VerticalLayout implements BeforeEnterOb
         // 2. Obtener el rol actual del usuario
         Role currentRole = AuthService.getCurrentRole();
         
-        // 3. Verificar anotaciones de rol específico usando REFLEXIÓN
+        // 3. Verificar anotaciones de rol específico
         Class<?> viewClass = this.getClass();
         
         // Verificar si requiere rol ADMIN
