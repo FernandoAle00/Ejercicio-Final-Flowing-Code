@@ -212,6 +212,16 @@ public class CourseService {
     }
 
     /*
+     * Obtiene un curso por el ID
+     */
+    @Transactional(readOnly = true)
+    public CourseDTO getCourseById(Long courseId){
+        return courseRepository.findById(courseId)
+                .map(DTOMapper::toCourseDTO)
+                .orElseThrow(() -> new IllegalArgumentException("No se encontró el curso con ID: " + courseId));
+    }
+
+    /*
      * Función para asignar un estudiante a un curso
      * @param studentId ID del estudiante, courseId ID del curso
      */
@@ -241,6 +251,36 @@ public class CourseService {
         Seat availableSeat = availableSeatOpt.get();
         availableSeat.setStudent(student);
         student.getSeats().add(availableSeat);
+        courseRepository.save(course);
+    }
+
+    /*
+     * Función para desinscribir un estudiante de un curso
+     * @param studentId ID del estudiante, courseId ID del curso
+     */
+    @Transactional
+    public void unassignStudentFromCourse(Long studentId, Long courseId) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new IllegalArgumentException("No se encontró el curso con ID: " + courseId));
+        
+        // Buscar el seat del estudiante en este curso
+        Optional<Seat> studentSeatOpt = course.getSeats().stream()
+                .filter(seat -> seat.getStudent() != null && seat.getStudent().getId().equals(studentId))
+                .findFirst();
+        
+        if (studentSeatOpt.isEmpty()) {
+            throw new IllegalArgumentException("El estudiante con ID: " + studentId + " no está inscrito en el curso con ID: " + courseId);
+        }
+        
+        // Desinscribir: dejar el seat vacío (sin estudiante ni nota)
+        Seat studentSeat = studentSeatOpt.get();
+        Student student = studentSeat.getStudent();
+        
+        // Remover la relación bidireccional
+        student.getSeats().remove(studentSeat);
+        studentSeat.setStudent(null);
+        studentSeat.setMark(null); // Limpiar la nota también
+        
         courseRepository.save(course);
     }
 
