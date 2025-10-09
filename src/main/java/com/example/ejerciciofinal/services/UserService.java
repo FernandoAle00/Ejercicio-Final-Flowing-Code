@@ -243,4 +243,32 @@ public class UserService {
         return professorRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("No se encontró el profesor con ID: " + id));
     }
+
+    /**
+     * Obtiene un profesor por su userId (del User asociado)
+     * @param userId ID del User
+     * @return Professor asociado al User
+     */
+    @Transactional(readOnly = true)
+    public Professor getProfessorByUserId(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("No se encontró el usuario con ID: " + userId));
+        
+        Person person = user.getPerson();
+        
+        if (person == null) {
+            throw new IllegalArgumentException("El usuario no tiene una persona asociada");
+        }
+        
+        // Usar el ID de Person para buscar en StudentRepository
+        // Esto evita problemas con proxies de Hibernate
+        Long personId = person.getId();
+        
+        return professorRepository.findById(personId)
+                .orElseThrow(() -> new IllegalArgumentException(
+                    "La persona asociada al usuario no es un estudiante (ID: " + personId + ")"
+                ));
+    }
+
+    
 }

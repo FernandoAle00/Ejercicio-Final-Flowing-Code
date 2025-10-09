@@ -255,6 +255,36 @@ public class CourseService {
     }
 
     /*
+     * Función para desinscribir un estudiante de un curso
+     * @param studentId ID del estudiante, courseId ID del curso
+     */
+    @Transactional
+    public void unassignStudentFromCourse(Long studentId, Long courseId) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new IllegalArgumentException("No se encontró el curso con ID: " + courseId));
+        
+        // Buscar el seat del estudiante en este curso
+        Optional<Seat> studentSeatOpt = course.getSeats().stream()
+                .filter(seat -> seat.getStudent() != null && seat.getStudent().getId().equals(studentId))
+                .findFirst();
+        
+        if (studentSeatOpt.isEmpty()) {
+            throw new IllegalArgumentException("El estudiante con ID: " + studentId + " no está inscrito en el curso con ID: " + courseId);
+        }
+        
+        // Desinscribir: dejar el seat vacío (sin estudiante ni nota)
+        Seat studentSeat = studentSeatOpt.get();
+        Student student = studentSeat.getStudent();
+        
+        // Remover la relación bidireccional
+        student.getSeats().remove(studentSeat);
+        studentSeat.setStudent(null);
+        studentSeat.setMark(null); // Limpiar la nota también
+        
+        courseRepository.save(course);
+    }
+
+    /*
      * Permite obtener a los students que están asignados a un curso específico
      * Retorna estudiantes con seats y seats.course cargados eager para evitar LazyInitializationException
      */
