@@ -270,5 +270,48 @@ public class UserService {
                 ));
     }
 
+    /**
+     * Actualiza los datos de Person y Address
+     * Funciona tanto para Student como para Professor
+     * @param person Objeto Person con los datos actualizados (incluye Address)
+     */
+    @Transactional
+    public void updatePersonData(Person person) {
+        if (person == null) {
+            throw new IllegalArgumentException("Person no puede ser nulo");
+        }
+        
+        if (person.getId() == null) {
+            throw new IllegalArgumentException("Person debe tener un ID válido");
+        }
+        
+        // Validar que el email no esté duplicado (excepto para el mismo usuario)
+        Person existingPerson = personRepository.findById(person.getId())
+                .orElseThrow(() -> new IllegalArgumentException("No se encontró la persona con ID: " + person.getId()));
+        
+        // Verificar si el email cambió y si está duplicado
+        if (!existingPerson.getEmail().equals(person.getEmail())) {
+            if (personRepository.existsByEmail(person.getEmail())) {
+                throw new IllegalArgumentException("El email ya está en uso por otro usuario");
+            }
+        }
+        
+        // Actualizar los datos de Person
+        existingPerson.setName(person.getName());
+        existingPerson.setPhone(person.getPhone());
+        existingPerson.setEmail(person.getEmail());
+        
+        // Actualizar los datos de Address
+        if (person.getAddress() != null && existingPerson.getAddress() != null) {
+            existingPerson.getAddress().setStreet(person.getAddress().getStreet());
+            existingPerson.getAddress().setCity(person.getAddress().getCity());
+            existingPerson.getAddress().setState(person.getAddress().getState());
+            existingPerson.getAddress().setCountry(person.getAddress().getCountry());
+        }
+        
+        // Guardar cambios (cascade ALL ya persiste Address automáticamente)
+        personRepository.save(existingPerson);
+    }
+
     
 }
