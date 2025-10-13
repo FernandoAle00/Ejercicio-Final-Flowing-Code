@@ -1,5 +1,8 @@
 package com.example.ejerciciofinal.views.admin;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 import org.springframework.data.domain.Page;
 
 import com.example.ejerciciofinal.model.Course;
@@ -11,8 +14,10 @@ import com.example.ejerciciofinal.security.AdminOnly;
 import com.example.ejerciciofinal.security.SecureView;
 import com.example.ejerciciofinal.services.UserService;
 import com.example.ejerciciofinal.views.MainLayout;
+import com.flowingcode.vaadin.addons.gridexporter.GridExporter;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.Grid.Column;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
@@ -31,6 +36,15 @@ public class ListUsersView extends SecureView {
 
     private final UserService userService;
     private final Grid<Person> grid = new Grid<>(Person.class, false);
+
+    // Referencias a columnas para el exporter
+    private Column<Person> idColumn;
+    private Column<Person> nameColumn;
+    private Column<Person> emailColumn;
+    private Column<Person> phoneColumn;
+    private Column<Person> typeColumn;
+    private Column<Person> numberSalaryColumn;
+    private Column<Person> locationColumn;
 
     // Configuración de paginación, no estoy seguro que debería estar definido en esta clase
     private static final int PAGE_SIZE = 10; // 10 usuarios por página
@@ -52,6 +66,9 @@ public class ListUsersView extends SecureView {
         // Configurar DataProvider con paginación
         configureDataProvider();
 
+        // Configurar GridExporter DESPUÉS del grid
+        configureGridExporter();
+
         add(grid);
     }
 
@@ -62,15 +79,14 @@ public class ListUsersView extends SecureView {
         grid.setWidthFull();
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_COMPACT);
 
-        // Definir columnas, ya que la autogeneración de columnas está deshabilitada
-        // Columnas de Person, que aplica a todas las tuplas
-        grid.addColumn(Person::getId).setHeader("ID").setWidth("80px").setFlexGrow(0);
-        grid.addColumn(Person::getName).setHeader("Nombre").setAutoWidth(true);
-        grid.addColumn(Person::getEmail).setHeader("Email").setAutoWidth(true);
-        grid.addColumn(Person::getPhone).setHeader("Teléfono").setAutoWidth(true);
+        // Definir columnas y guardar referencias para el exporter
+        idColumn = grid.addColumn(Person::getId).setHeader("ID").setWidth("80px").setFlexGrow(0);
+        nameColumn = grid.addColumn(Person::getName).setHeader("Nombre").setAutoWidth(true);
+        emailColumn = grid.addColumn(Person::getEmail).setHeader("Email").setAutoWidth(true);
+        phoneColumn = grid.addColumn(Person::getPhone).setHeader("Teléfono").setAutoWidth(true);
 
         // Columna que especifica el tipo de Person
-        grid.addColumn(person -> {
+        typeColumn = grid.addColumn(person -> {
             if (person instanceof Student) {
                 return "Estudiante";
             } else if (person instanceof Professor) {
@@ -81,7 +97,7 @@ public class ListUsersView extends SecureView {
         }).setHeader("Tipo").setAutoWidth(true);
 
         // Columna condicional, student number para estudiante, salario para profesor
-        grid.addColumn(person -> {
+        numberSalaryColumn = grid.addColumn(person -> {
             if (person instanceof Student student) {
                 return student.getStudentNumber() != null ? student.getStudentNumber().toString() : "N/A";
             } else if (person instanceof Professor professor) {
@@ -91,7 +107,7 @@ public class ListUsersView extends SecureView {
         }).setHeader("Nro. Estudiante / Salario").setAutoWidth(true);
 
         // Columna de address
-        grid.addColumn(person -> {
+        locationColumn = grid.addColumn(person -> {
             if (person.getAddress() != null) {
                 return person.getAddress().getCity() + ", " + person.getAddress().getCountry();
             }
@@ -120,6 +136,62 @@ public class ListUsersView extends SecureView {
 
         grid.setDataProvider(dataProvider);
         grid.setPageSize(PAGE_SIZE);
+    }
+
+    /**
+     * Configura el GridExporter para permitir exportar los datos a Excel, CSV y PDF
+     */
+    private void configureGridExporter() {
+        GridExporter<Person> exporter = GridExporter.createFor(grid);
+        
+        // Configurar título del documento exportado
+        exporter.setTitle("Listado de Usuarios del Sistema");
+        
+        // Nombre del archivo con timestamp
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+        exporter.setFileName("Usuarios_" + timestamp);
+        
+        // Configurar valores de exportación para columnas especiales
+        // Para Student/Professor, necesitamos manejar el polimorfismo correctamente
+        
+        // Columna de Tipo
+        exporter.setExportValue(typeColumn, person -> {
+            if (person instanceof Student) {
+                return "Estudiante";
+            } else if (person instanceof Professor) {
+                return "Profesor";
+            }
+            return "Desconocido";
+        });
+        
+        // Columna de Nro. Estudiante / Salario
+        exporter.setExportValue(numberSalaryColumn, person -> {
+            if (person instanceof Student student) {
+                return student.getStudentNumber() != null ? 
+                    "Nro: " + student.getStudentNumber().toString() : "N/A";
+            } else if (person instanceof Professor professor) {
+                return String.format("Salario: $%.2f", professor.getSalary());
+            }
+            return "-";
+        });
+        
+        // Columna de Ubicación
+        exporter.setExportValue(locationColumn, person -> {
+            if (person.getAddress() != null) {
+                return person.getAddress().getCity() + ", " + 
+                       person.getAddress().getState() + ", " + 
+                       person.getAddress().getCountry();
+            }
+            return "Sin dirección";
+        });
+        
+        // Configurar auto-ajuste de columnas
+        exporter.setAutoSizeColumns(true);
+        
+        // Configurar charset para CSV (importante para caracteres especiales en español)
+        exporter.setCsvCharset(() -> java.nio.charset.StandardCharsets.UTF_8);
+        
+        // El exporter agrega automáticamente los botones de exportación al footer del grid
     }
 
     /*

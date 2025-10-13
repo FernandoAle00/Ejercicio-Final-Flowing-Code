@@ -1,5 +1,8 @@
 package com.example.ejerciciofinal.views.admin;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 import org.springframework.data.domain.Page;
 
 import com.example.ejerciciofinal.model.Course;
@@ -7,7 +10,9 @@ import com.example.ejerciciofinal.security.AdminOnly;
 import com.example.ejerciciofinal.security.SecureView;
 import com.example.ejerciciofinal.services.CourseService;
 import com.example.ejerciciofinal.views.MainLayout;
+import com.flowingcode.vaadin.addons.gridexporter.GridExporter;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.Grid.Column;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -23,6 +28,12 @@ public class ListCoursesView extends SecureView {
 
     private final CourseService courseService;
     private final Grid<Course> grid = new Grid<>(Course.class, false);
+
+    // Referencias a columnas para el exporter
+    private Column<Course> idColumn;
+    private Column<Course> nameColumn;
+    private Column<Course> professorColumn;
+    private Column<Course> seatsColumn;
 
     private static final int PAGE_SIZE = 10; // 10 cursos por página
 
@@ -44,6 +55,9 @@ public class ListCoursesView extends SecureView {
         // Configurar DataProvider con paginación
         configureDataProvider();
 
+        // Configurar GridExporter DESPUÉS del grid
+        configureGridExporter();
+
         add(grid);
     }
 
@@ -52,13 +66,13 @@ public class ListCoursesView extends SecureView {
         grid.setWidthFull();
         grid.addThemeVariants(GridVariant.LUMO_ROW_STRIPES, GridVariant.LUMO_COMPACT);
 
-        // Definir columnas, ya que la autogeneración de columnas está deshabilitada
-        grid.addColumn(Course::getId).setHeader("ID").setWidth("80px").setFlexGrow(0);
-        grid.addColumn(Course::getName).setHeader("Nombre").setAutoWidth(true);
-        grid.addColumn(course -> course.getProfessor() != null ? course.getProfessor().getName() : "N/A")
+        // Definir columnas y guardar referencias para el exporter
+        idColumn = grid.addColumn(Course::getId).setHeader("ID").setWidth("80px").setFlexGrow(0);
+        nameColumn = grid.addColumn(Course::getName).setHeader("Nombre").setAutoWidth(true);
+        professorColumn = grid.addColumn(course -> course.getProfessor() != null ? course.getProfessor().getName() : "N/A")
                 .setHeader("Profesor")
                 .setAutoWidth(true);
-        grid.addColumn(course -> course.getSeats() != null ? course.getSeats().size() : 0)
+        seatsColumn = grid.addColumn(course -> course.getSeats() != null ? course.getSeats().size() : 0)
                 .setHeader("Cantidad de Cupos")
                 .setAutoWidth(true);
 
@@ -82,5 +96,50 @@ public class ListCoursesView extends SecureView {
         grid.setDataProvider(dataProvider);
         grid.setPageSize(PAGE_SIZE);
         
+    }
+
+    /**
+     * Configura el GridExporter para permitir exportar los datos a Excel, CSV y PDF
+     */
+    private void configureGridExporter() {
+        GridExporter<Course> exporter = GridExporter.createFor(grid);
+        
+        // Configurar título del documento exportado
+        exporter.setTitle("Listado de Cursos del Sistema");
+        
+        // Nombre del archivo con timestamp
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+        exporter.setFileName("Cursos_" + timestamp);
+        
+        // Configurar valores de exportación para columnas especiales
+        
+        // Columna de Profesor - asegurar que siempre hay un valor
+        exporter.setExportValue(professorColumn, course -> {
+            if (course.getProfessor() != null) {
+                return course.getProfessor().getName();
+            }
+            return "Sin profesor asignado";
+        });
+        
+        // Columna de Cantidad de Cupos
+        exporter.setExportValue(seatsColumn, course -> {
+            if (course.getSeats() != null) {
+                int totalSeats = course.getSeats().size();
+                long occupiedSeats = course.getSeats().stream()
+                    .filter(seat -> seat.getStudent() != null)
+                    .count();
+                return String.format("Total: %d | Ocupados: %d | Disponibles: %d", 
+                    totalSeats, occupiedSeats, (totalSeats - occupiedSeats));
+            }
+            return "0";
+        });
+        
+        // Configurar auto-ajuste de columnas
+        exporter.setAutoSizeColumns(true);
+        
+        // Configurar charset para CSV (importante para caracteres especiales en español)
+        exporter.setCsvCharset(() -> java.nio.charset.StandardCharsets.UTF_8);
+        
+        // El exporter agrega automáticamente los botones de exportación al footer del grid
     }
 }

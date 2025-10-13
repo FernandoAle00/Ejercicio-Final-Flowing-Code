@@ -81,7 +81,7 @@ public class ProfessorCoursesView extends SecureView {
 
         // Obtener el Professor usando el método correcto que maneja el proxy de Hibernate
         Professor professor = userService.getProfessorByUserId(userId);
-        
+
         // Ordenar cursos alfabéticamente por nombre
         List<Long> courseIds = professor.getCourses().stream()
                 .sorted((c1, c2) -> c1.getName().compareToIgnoreCase(c2.getName()))
@@ -127,21 +127,21 @@ public class ProfessorCoursesView extends SecureView {
 
     private Div createCourseCard(Long courseId) {
         CourseDTO course = courseService.getCourseById(courseId);
-        
+
         // Calcular estadísticas del curso
         long totalSeats = course.getSeats().size();
         long enrolledStudents = course.getSeats().stream()
                 .filter(seat -> seat.getStudentId() != null)
                 .count();
         long availableSeats = totalSeats - enrolledStudents;
-        
+
         // Calcular promedio de notas del curso
         double averageMark = course.getSeats().stream()
                 .filter(seat -> seat.getMark() != null)
                 .mapToDouble(SeatDTO::getMark)
                 .average()
                 .orElse(0.0);
-        
+
         long studentsWithGrades = course.getSeats().stream()
                 .filter(seat -> seat.getMark() != null)
                 .count();
@@ -198,13 +198,13 @@ public class ProfessorCoursesView extends SecureView {
                 .set("margin-bottom", "var(--lumo-space-m)");
 
         // Estudiantes inscritos
-        Div enrolledInfo = createInfoRow(VaadinIcon.USERS, "Estudiantes inscritos", 
+        Div enrolledInfo = createInfoRow(VaadinIcon.USERS, "Estudiantes inscritos",
                 String.format("%d / %d", enrolledStudents, totalSeats));
-        
+
         // Cupos disponibles
-        Div availableInfo = createInfoRow(VaadinIcon.TICKET, "Cupos disponibles", 
+        Div availableInfo = createInfoRow(VaadinIcon.TICKET, "Cupos disponibles",
                 String.valueOf(availableSeats));
-        
+
         // Colorear cupos según disponibilidad
         Span availableSpan = (Span) availableInfo.getChildren()
                 .filter(component -> component instanceof Span)
@@ -224,7 +224,7 @@ public class ProfessorCoursesView extends SecureView {
         // Promedio del curso
         Div averageInfo;
         if (studentsWithGrades > 0) {
-            averageInfo = createInfoRow(VaadinIcon.CHART, "Promedio del curso", 
+            averageInfo = createInfoRow(VaadinIcon.CHART, "Promedio del curso",
                     String.format("%.2f", averageMark));
             Span avgSpan = (Span) averageInfo.getChildren()
                     .filter(component -> component instanceof Span)
@@ -292,6 +292,7 @@ public class ProfessorCoursesView extends SecureView {
 
             course.getSeats().stream()
                     .filter(seat -> seat.getStudentId() != null)
+                    .sorted((s1, s2) -> s1.getStudentName().compareToIgnoreCase(s2.getStudentName()))
                     .forEach(seat -> {
                         Div studentRow = createStudentRow(seat, courseId);
                         studentsList.add(studentRow);
@@ -345,7 +346,7 @@ public class ProfessorCoursesView extends SecureView {
         gradeLayout.setPadding(false);
         gradeLayout.setAlignItems(FlexComponent.Alignment.CENTER);
         gradeLayout.getStyle().set("gap", "var(--lumo-space-xs)");
-        
+
         Span gradeDisplay = new Span();
         if (seat.getMark() != null) {
             gradeDisplay.setText(String.format("%.2f", seat.getMark()));
@@ -362,7 +363,7 @@ public class ProfessorCoursesView extends SecureView {
                     .set("font-style", "italic")
                     .set("font-size", "var(--lumo-font-size-s)");
         }
-        
+
         // Botón para editar nota
         Button editGradeButton = new Button(new Icon(VaadinIcon.EDIT));
         editGradeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
@@ -371,7 +372,7 @@ public class ProfessorCoursesView extends SecureView {
                 .set("padding", "0")
                 .set("min-width", "auto");
         editGradeButton.addClickListener(e -> showEditGradeDialog(seat, courseId));
-        
+
         gradeLayout.add(gradeDisplay, editGradeButton);
         infoContainer.add(studentName, gradeLayout);
 
@@ -412,10 +413,21 @@ public class ProfessorCoursesView extends SecureView {
     }
 
     private String getMarkColor(Double mark) {
-        if (mark == null) return "var(--lumo-contrast-50pct)";
-        if (mark >= 9.0) return "#10b981"; // Verde
-        if (mark >= 7.0) return "#3b82f6"; // Azul
-        if (mark >= 6.0) return "#f59e0b"; // Naranja
+        if (mark == null) {
+            return "var(--lumo-contrast-50pct)";
+        }
+        if (mark >= 9.0) {
+            return "#10b981"; // Verde
+
+        }
+        if (mark >= 7.0) {
+            return "#3b82f6"; // Azul
+
+        }
+        if (mark >= 6.0) {
+            return "#f59e0b"; // Naranja
+
+        }
         return "#ef4444"; // Rojo
     }
 
@@ -426,13 +438,13 @@ public class ProfessorCoursesView extends SecureView {
         ConfirmDialog dialog = new ConfirmDialog();
         dialog.setHeader("Desinscribir estudiante");
         dialog.setText("¿Estás seguro de que deseas desinscribir a " + studentName + " de este curso? Se perderá su calificación si la tiene.");
-        
+
         dialog.setCancelable(true);
         dialog.setCancelText("Cancelar");
-        
+
         dialog.setConfirmText("Desinscribir");
         dialog.setConfirmButtonTheme("error primary");
-        
+
         dialog.addConfirmListener(e -> {
             try {
                 courseService.unassignStudentFromCourse(studentId, courseId);
@@ -442,7 +454,7 @@ public class ProfessorCoursesView extends SecureView {
                 showErrorNotification("Error al desinscribir: " + ex.getMessage());
             }
         });
-        
+
         dialog.open();
     }
 
@@ -468,7 +480,7 @@ public class ProfessorCoursesView extends SecureView {
 
         // Cargar todos los estudiantes
         List<StudentSearchDTO> allStudents = userService.getAllStudentsForSearch();
-        
+
         // Configurar filtrado
         studentComboBox.setItems(query -> {
             String filter = query.getFilter().orElse("").toLowerCase();
@@ -485,14 +497,14 @@ public class ProfessorCoursesView extends SecureView {
         buttonLayout.setSpacing(true);
 
         Button cancelButton = new Button("Cancelar", e -> dialog.close());
-        
+
         Button enrollButton = new Button("Inscribir", e -> {
             StudentSearchDTO selectedStudent = studentComboBox.getValue();
             if (selectedStudent == null) {
                 showErrorNotification("Debe seleccionar un estudiante");
                 return;
             }
-            
+
             try {
                 // Verificar si puede inscribirse
                 boolean canAssign = userService.canAssignStudentToCourse(selectedStudent.getId(), courseId);
@@ -500,7 +512,7 @@ public class ProfessorCoursesView extends SecureView {
                     showErrorNotification("El estudiante ya está inscrito en este curso");
                     return;
                 }
-                
+
                 // Inscribir al estudiante
                 courseService.assignStudentToCourse(selectedStudent.getId(), courseId);
                 showSuccessNotification("Estudiante inscrito exitosamente");
@@ -514,7 +526,7 @@ public class ProfessorCoursesView extends SecureView {
 
         buttonLayout.add(cancelButton, enrollButton);
         dialogLayout.add(studentComboBox, buttonLayout);
-        
+
         dialog.add(dialogLayout);
         dialog.open();
     }
@@ -541,7 +553,7 @@ public class ProfessorCoursesView extends SecureView {
         gradeField.setMax(10.0);
         gradeField.setStep(0.01);
         gradeField.setHelperText("La nota debe estar entre 0 y 10");
-        
+
         // Establecer el valor actual si existe
         if (seat.getMark() != null) {
             gradeField.setValue(seat.getMark());
@@ -554,20 +566,20 @@ public class ProfessorCoursesView extends SecureView {
         buttonLayout.setSpacing(true);
 
         Button cancelButton = new Button("Cancelar", e -> dialog.close());
-        
+
         Button saveButton = new Button("Guardar", e -> {
             Double newGrade = gradeField.getValue();
-            
+
             if (newGrade == null) {
                 showErrorNotification("Debe ingresar una nota válida");
                 return;
             }
-            
+
             if (newGrade < 0.0 || newGrade > 10.0) {
                 showErrorNotification("La nota debe estar entre 0 y 10");
                 return;
             }
-            
+
             try {
                 // Llamar al servicio para actualizar la nota
                 // Esto también recalculará el promedio del estudiante
@@ -583,7 +595,7 @@ public class ProfessorCoursesView extends SecureView {
 
         buttonLayout.add(cancelButton, saveButton);
         dialogLayout.add(gradeField, buttonLayout);
-        
+
         dialog.add(dialogLayout);
         dialog.open();
     }
