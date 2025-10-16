@@ -17,3 +17,4 @@ vite.generated.ts
 *.md
 
 *.log
+package-lock.json

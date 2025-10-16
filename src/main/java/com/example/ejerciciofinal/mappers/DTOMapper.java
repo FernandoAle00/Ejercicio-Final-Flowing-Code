@@ -11,6 +11,7 @@ import com.example.ejerciciofinal.dtos.CreateUserDTO.ProfessorDTO;
 import com.example.ejerciciofinal.dtos.CreateUserDTO.StudentDTO;
 import com.example.ejerciciofinal.dtos.SeatDTO;
 import com.example.ejerciciofinal.dtos.StudentDetailDTO;
+import com.example.ejerciciofinal.model.Address;
 import com.example.ejerciciofinal.model.Course;
 import com.example.ejerciciofinal.model.Professor;
 import com.example.ejerciciofinal.model.Seat;
@@ -110,7 +111,7 @@ public class DTOMapper {
     /**
      * Convierte un Address a AddressDTO
      */
-    public static AddressDTO toAddressDTO(com.example.ejerciciofinal.model.Address address) {
+    public static AddressDTO toAddressDTO(Address address) {
         if (address == null) return null;
         
         return new AddressDTO(

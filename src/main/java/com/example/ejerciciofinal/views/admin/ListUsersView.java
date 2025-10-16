@@ -139,21 +139,21 @@ public class ListUsersView extends SecureView {
     }
 
     /**
-     * Configura el GridExporter para permitir exportar los datos a Excel, CSV y PDF
+     * Configura el GridExporter para permitir exportar los datos a Excel, CSV y
+     * PDF
      */
     private void configureGridExporter() {
         GridExporter<Person> exporter = GridExporter.createFor(grid);
-        
+
         // Configurar título del documento exportado
         exporter.setTitle("Listado de Usuarios del Sistema");
-        
+
         // Nombre del archivo con timestamp
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
         exporter.setFileName("Usuarios_" + timestamp);
-        
+
         // Configurar valores de exportación para columnas especiales
-        // Para Student/Professor, necesitamos manejar el polimorfismo correctamente
-        
+        // Para Student/Professor, necesitamos manejar el polimorfismo
         // Columna de Tipo
         exporter.setExportValue(typeColumn, person -> {
             if (person instanceof Student) {
@@ -163,34 +163,34 @@ public class ListUsersView extends SecureView {
             }
             return "Desconocido";
         });
-        
+
         // Columna de Nro. Estudiante / Salario
         exporter.setExportValue(numberSalaryColumn, person -> {
             if (person instanceof Student student) {
-                return student.getStudentNumber() != null ? 
-                    "Nro: " + student.getStudentNumber().toString() : "N/A";
+                return student.getStudentNumber() != null
+                        ? "Nro: " + student.getStudentNumber().toString() : "N/A";
             } else if (person instanceof Professor professor) {
                 return String.format("Salario: $%.2f", professor.getSalary());
             }
             return "-";
         });
-        
+
         // Columna de Ubicación
         exporter.setExportValue(locationColumn, person -> {
             if (person.getAddress() != null) {
-                return person.getAddress().getCity() + ", " + 
-                       person.getAddress().getState() + ", " + 
-                       person.getAddress().getCountry();
+                return person.getAddress().getCity() + ", "
+                        + person.getAddress().getState() + ", "
+                        + person.getAddress().getCountry();
             }
             return "Sin dirección";
         });
-        
+
         // Configurar auto-ajuste de columnas
         exporter.setAutoSizeColumns(true);
-        
+
         // Configurar charset para CSV (importante para caracteres especiales en español)
         exporter.setCsvCharset(() -> java.nio.charset.StandardCharsets.UTF_8);
-        
+
         // El exporter agrega automáticamente los botones de exportación al footer del grid
     }
 
@@ -209,39 +209,39 @@ public class ListUsersView extends SecureView {
         layout.setPadding(true);
         layout.setSpacing(true);
         layout.getStyle()
-            .set("overflow-y", "auto")
-            .set("max-height", "85vh");
+                .set("overflow-y", "auto")
+                .set("max-height", "85vh");
 
         // Título según tipo de Person
         H2 title = new H2(person instanceof Student ? "Detalles del Estudiante" : "Detalles del Profesor");
         title.getStyle()
-            .set("margin-top", "0")
-            .set("margin-bottom", "20px")
-            .set("color", "#1a1a1a")
-            .set("font-weight", "500")
-            .set("border-bottom", "2px solid #e0e0e0")
-            .set("padding-bottom", "10px");
+                .set("margin-top", "0")
+                .set("margin-bottom", "20px")
+                .set("color", "#1a1a1a")
+                .set("font-weight", "500")
+                .set("border-bottom", "2px solid #e0e0e0")
+                .set("padding-bottom", "10px");
         layout.add(title);
 
         // Información básica de Person
         H3 basicInfoTitle = new H3("Información Personal");
         basicInfoTitle.getStyle()
-            .set("margin-top", "0")
-            .set("margin-bottom", "12px")
-            .set("color", "#424242")
-            .set("font-size", "1.1rem")
-            .set("font-weight", "500");
+                .set("margin-top", "0")
+                .set("margin-bottom", "12px")
+                .set("color", "#424242")
+                .set("font-size", "1.1rem")
+                .set("font-weight", "500");
         layout.add(basicInfoTitle);
 
         Div infoContainer = new Div();
         infoContainer.getStyle()
-            .set("display", "flex")
-            .set("flex-direction", "column")
-            .set("gap", "10px")
-            .set("padding", "16px")
-            .set("background-color", "#fafafa")
-            .set("border-radius", "8px")
-            .set("border", "1px solid #e0e0e0");
+                .set("display", "flex")
+                .set("flex-direction", "column")
+                .set("gap", "10px")
+                .set("padding", "16px")
+                .set("background-color", "#fafafa")
+                .set("border-radius", "8px")
+                .set("border", "1px solid #e0e0e0");
 
         addDetailRow(infoContainer, "ID:", String.valueOf(person.getId()));
         addDetailRow(infoContainer, "Nombre:", person.getName());
@@ -282,21 +282,21 @@ public class ListUsersView extends SecureView {
     private void addDetailRow(Div container, String label, String value) {
         Div row = new Div();
         row.getStyle()
-            .set("display", "flex")
-            .set("gap", "12px")
-            .set("align-items", "baseline");
+                .set("display", "flex")
+                .set("gap", "12px")
+                .set("align-items", "baseline");
 
         Span labelSpan = new Span(label);
         labelSpan.getStyle()
-            .set("font-weight", "500")
-            .set("min-width", "140px")
-            .set("color", "#616161")
-            .set("font-size", "0.9rem");
+                .set("font-weight", "500")
+                .set("min-width", "140px")
+                .set("color", "#616161")
+                .set("font-size", "0.9rem");
 
         Span valueSpan = new Span(value != null ? value : "N/A");
         valueSpan.getStyle()
-            .set("color", "#212121")
-            .set("font-size", "0.95rem");
+                .set("color", "#212121")
+                .set("font-size", "0.95rem");
 
         row.add(labelSpan, valueSpan);
         container.add(row);
@@ -309,22 +309,22 @@ public class ListUsersView extends SecureView {
 
         H3 studentInfoTitle = new H3("Detalles del Estudiante");
         studentInfoTitle.getStyle()
-            .set("margin-top", "24px")
-            .set("margin-bottom", "12px")
-            .set("color", "#424242")
-            .set("font-size", "1.1rem")
-            .set("font-weight", "500");
+                .set("margin-top", "24px")
+                .set("margin-bottom", "12px")
+                .set("color", "#424242")
+                .set("font-size", "1.1rem")
+                .set("font-weight", "500");
         layout.add(studentInfoTitle);
 
         Div studentInfoContainer = new Div();
         studentInfoContainer.getStyle()
-            .set("display", "flex")
-            .set("flex-direction", "column")
-            .set("gap", "10px")
-            .set("padding", "16px")
-            .set("background-color", "#fafafa")
-            .set("border-radius", "8px")
-            .set("border", "1px solid #e0e0e0");
+                .set("display", "flex")
+                .set("flex-direction", "column")
+                .set("gap", "10px")
+                .set("padding", "16px")
+                .set("background-color", "#fafafa")
+                .set("border-radius", "8px")
+                .set("border", "1px solid #e0e0e0");
 
         addDetailRow(studentInfoContainer, "Nro. Estudiante:", student.getStudentNumber().toString());
         addDetailRow(studentInfoContainer, "Promedio General:", String.format("%.2f", student.getAvgMark()));
@@ -336,11 +336,11 @@ public class ListUsersView extends SecureView {
         if (!student.getSeats().isEmpty()) {
             H3 coursesTitle = new H3("Cursos Inscritos");
             coursesTitle.getStyle()
-                .set("margin-top", "24px")
-                .set("margin-bottom", "16px")
-                .set("color", "#424242")
-                .set("font-size", "1.1rem")
-                .set("font-weight", "500");
+                    .set("margin-top", "24px")
+                    .set("margin-bottom", "16px")
+                    .set("color", "#424242")
+                    .set("font-size", "1.1rem")
+                    .set("font-weight", "500");
             layout.add(coursesTitle);
 
             // Grid container con 2 columnas
@@ -364,20 +364,20 @@ public class ListUsersView extends SecureView {
                 // Título del curso
                 Span courseTitle = new Span(seat.getCourse().getName());
                 courseTitle.getStyle()
-                    .set("display", "block")
-                    .set("font-weight", "500")
-                    .set("font-size", "1rem")
-                    .set("color", "#1a1a1a")
-                    .set("margin-bottom", "12px")
-                    .set("padding-bottom", "8px")
-                    .set("border-bottom", "1px solid #f0f0f0");
+                        .set("display", "block")
+                        .set("font-weight", "500")
+                        .set("font-size", "1rem")
+                        .set("color", "#1a1a1a")
+                        .set("margin-bottom", "12px")
+                        .set("padding-bottom", "8px")
+                        .set("border-bottom", "1px solid #f0f0f0");
 
                 // Información del curso
                 Div courseInfo = new Div();
                 courseInfo.getStyle()
-                    .set("display", "flex")
-                    .set("flex-direction", "column")
-                    .set("gap", "6px");
+                        .set("display", "flex")
+                        .set("flex-direction", "column")
+                        .set("gap", "6px");
 
                 addCourseInfoRow(courseInfo, "Año", String.format("%d", seat.getYear().getYear()));
                 addCourseInfoRow(courseInfo, "Nota", String.format("%.2f", seat.getMark()));
@@ -396,22 +396,22 @@ public class ListUsersView extends SecureView {
 
         H3 professorInfoTitle = new H3("Información Profesional");
         professorInfoTitle.getStyle()
-            .set("margin-top", "24px")
-            .set("margin-bottom", "12px")
-            .set("color", "#424242")
-            .set("font-size", "1.1rem")
-            .set("font-weight", "500");
+                .set("margin-top", "24px")
+                .set("margin-bottom", "12px")
+                .set("color", "#424242")
+                .set("font-size", "1.1rem")
+                .set("font-weight", "500");
         layout.add(professorInfoTitle);
 
         Div professorInfoContainer = new Div();
         professorInfoContainer.getStyle()
-            .set("display", "flex")
-            .set("flex-direction", "column")
-            .set("gap", "10px")
-            .set("padding", "16px")
-            .set("background-color", "#fafafa")
-            .set("border-radius", "8px")
-            .set("border", "1px solid #e0e0e0");
+                .set("display", "flex")
+                .set("flex-direction", "column")
+                .set("gap", "10px")
+                .set("padding", "16px")
+                .set("background-color", "#fafafa")
+                .set("border-radius", "8px")
+                .set("border", "1px solid #e0e0e0");
 
         addDetailRow(professorInfoContainer, "Salario:", String.format("$%.2f", professor.getSalary()));
         addDetailRow(professorInfoContainer, "Cursos Dictados:", String.valueOf(professor.getCourses().size()));
@@ -422,11 +422,11 @@ public class ListUsersView extends SecureView {
         if (!professor.getCourses().isEmpty()) {
             H3 coursesTitle = new H3("Cursos que Dicta");
             coursesTitle.getStyle()
-                .set("margin-top", "24px")
-                .set("margin-bottom", "16px")
-                .set("color", "#424242")
-                .set("font-size", "1.1rem")
-                .set("font-weight", "500");
+                    .set("margin-top", "24px")
+                    .set("margin-bottom", "16px")
+                    .set("color", "#424242")
+                    .set("font-size", "1.1rem")
+                    .set("font-weight", "500");
             layout.add(coursesTitle);
 
             // Grid container con 2 columnas
@@ -456,20 +456,20 @@ public class ListUsersView extends SecureView {
                 // Título del curso
                 Span courseTitle = new Span(course.getName());
                 courseTitle.getStyle()
-                    .set("display", "block")
-                    .set("font-weight", "500")
-                    .set("font-size", "1rem")
-                    .set("color", "#1a1a1a")
-                    .set("margin-bottom", "12px")
-                    .set("padding-bottom", "8px")
-                    .set("border-bottom", "1px solid #f0f0f0");
+                        .set("display", "block")
+                        .set("font-weight", "500")
+                        .set("font-size", "1rem")
+                        .set("color", "#1a1a1a")
+                        .set("margin-bottom", "12px")
+                        .set("padding-bottom", "8px")
+                        .set("border-bottom", "1px solid #f0f0f0");
 
                 // Información del curso
                 Div courseInfo = new Div();
                 courseInfo.getStyle()
-                    .set("display", "flex")
-                    .set("flex-direction", "column")
-                    .set("gap", "6px");
+                        .set("display", "flex")
+                        .set("flex-direction", "column")
+                        .set("gap", "6px");
 
                 addCourseInfoRow(courseInfo, "Cupos Totales", String.valueOf(totalSeats));
                 addCourseInfoRow(courseInfo, "Ocupados", String.valueOf(occupiedSeats));
@@ -489,20 +489,20 @@ public class ListUsersView extends SecureView {
     private void addCourseInfoRow(Div container, String label, String value) {
         Div row = new Div();
         row.getStyle()
-            .set("display", "flex")
-            .set("justify-content", "space-between")
-            .set("align-items", "center");
+                .set("display", "flex")
+                .set("justify-content", "space-between")
+                .set("align-items", "center");
 
         Span labelSpan = new Span(label);
         labelSpan.getStyle()
-            .set("font-size", "0.85rem")
-            .set("color", "#757575");
+                .set("font-size", "0.85rem")
+                .set("color", "#757575");
 
         Span valueSpan = new Span(value);
         valueSpan.getStyle()
-            .set("font-size", "0.9rem")
-            .set("color", "#212121")
-            .set("font-weight", "500");
+                .set("font-size", "0.9rem")
+                .set("color", "#212121")
+                .set("font-weight", "500");
 
         row.add(labelSpan, valueSpan);
         container.add(row);

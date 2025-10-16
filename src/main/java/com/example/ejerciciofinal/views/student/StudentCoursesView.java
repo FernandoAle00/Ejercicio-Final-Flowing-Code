@@ -11,6 +11,7 @@ import com.example.ejerciciofinal.services.CourseService;
 import com.example.ejerciciofinal.services.UserService;
 import com.example.ejerciciofinal.security.SecureView;
 import com.example.ejerciciofinal.views.MainLayout;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
@@ -23,6 +24,7 @@ import com.vaadin.flow.router.PageTitle;
 /**
  * Vista de ejemplo para estudiantes Solo accesible por usuarios con rol STUDENT
  */
+@CssImport("./styles/courses-view-styles.css")
 @StudentOnly
 @Route(value = "student/courses", layout = MainLayout.class)
 @PageTitle("Mis Cursos | Estudiante")
@@ -41,32 +43,18 @@ public class StudentCoursesView extends SecureView {
         setSpacing(false);
         setPadding(false);
         setSizeFull();
-        
-        // Contenedor principal con padding
-        Div mainContainer = new Div();
-        mainContainer.getStyle()
-                .set("padding", "var(--lumo-space-l)")
-                .set("max-width", "1400px")
-                .set("margin", "0 auto")
-                .set("width", "100%");
 
-        H2 title = new H2("Mis Cursos");
-        title.getStyle()
-                .set("margin-top", "0")
-                .set("margin-bottom", "var(--lumo-space-l)")
-                .set("color", "var(--lumo-header-text-color)");
+        // Contenedor principal con padding y centrado
+        Div mainContainer = new Div();
+        mainContainer.addClassName("courses-main-container");
 
         Long userId = AuthService.getCurrentUserId();
 
-        // Contenedor de cursos en grilla
+        H2 title = new H2("Mis Cursos");
+        title.addClassName("course-section-title");
         Div coursesGrid = new Div();
-        coursesGrid.getStyle()
-                .set("display", "grid")
-                .set("grid-template-columns", "repeat(auto-fill, minmax(350px, 1fr))")
-                .set("gap", "var(--lumo-space-l)")
-                .set("width", "100%");
+        coursesGrid.addClassName("courses-grid");
 
-        // Obtener el Student usando el método correcto que maneja el proxy de Hibernate
         Student student = userService.getStudentByUserId(userId);
         List<Long> courseIds = student.getSeats().stream()
                 .map(seat -> seat.getCourse().getId())
@@ -89,21 +77,17 @@ public class StudentCoursesView extends SecureView {
 
     private Div createEmptyState() {
         Div emptyState = new Div();
-        emptyState.getStyle()
-                .set("text-align", "center")
-                .set("padding", "var(--lumo-space-xl)")
-                .set("background", "var(--lumo-contrast-5pct)")
-                .set("border-radius", "var(--lumo-border-radius-l)");
+        emptyState.addClassName("empty-state");
         
         Icon icon = new Icon(VaadinIcon.BOOK);
         icon.setSize("64px");
-        icon.getStyle().set("color", "var(--lumo-contrast-40pct)");
+        icon.addClassName("empty-state-icon");
         
         H3 emptyTitle = new H3("No estás inscrito en ningún curso");
-        emptyTitle.getStyle().set("color", "var(--lumo-contrast-60pct)");
+        emptyTitle.addClassName("empty-state-text");
         
         Span emptyMessage = new Span("Contacta a un administrador para inscribirte en cursos");
-        emptyMessage.getStyle().set("color", "var(--lumo-contrast-50pct)");
+        emptyMessage.addClassName("empty-state-text");
         
         emptyState.add(icon, emptyTitle, emptyMessage);
         return emptyState;
@@ -118,49 +102,11 @@ public class StudentCoursesView extends SecureView {
                 .findFirst()
                 .orElse(null);
 
-        // Tarjeta principal del curso
         Div card = new Div();
-        card.getStyle()
-                .set("background", "var(--lumo-base-color)")
-                .set("border", "1px solid var(--lumo-contrast-10pct)")
-                .set("border-radius", "var(--lumo-border-radius-l)")
-                .set("padding", "var(--lumo-space-m)")
-                .set("box-shadow", "var(--lumo-box-shadow-s)")
-                .set("transition", "all 0.3s ease")
-                .set("cursor", "pointer")
-                .set("height", "100%")
-                .set("display", "flex")
-                .set("flex-direction", "column");
-
-        // Efecto hover
-        card.getElement().addEventListener("mouseenter", e -> {
-            card.getStyle()
-                    .set("box-shadow", "var(--lumo-box-shadow-m)")
-                    .set("transform", "translateY(-4px)");
-        });
-        card.getElement().addEventListener("mouseleave", e -> {
-            card.getStyle()
-                    .set("box-shadow", "var(--lumo-box-shadow-s)")
-                    .set("transform", "translateY(0)");
-        });
-
-        // Header del curso con color distintivo
-        Div header = new Div();
-        header.getStyle()
-                .set("background", "linear-gradient(135deg, var(--lumo-primary-color) 0%, var(--lumo-primary-color-50pct) 100%)")
-                .set("color", "var(--lumo-primary-contrast-color)")
-                .set("padding", "var(--lumo-space-m)")
-                .set("border-radius", "var(--lumo-border-radius-m)")
-                .set("margin-bottom", "var(--lumo-space-m)");
-
+        card.addClassName("course-card");
+        
         H3 courseTitle = new H3(course.getName());
-        courseTitle.getStyle()
-                .set("margin", "0")
-                .set("font-size", "var(--lumo-font-size-l)")
-                .set("font-weight", "600")
-                .set("color", "inherit");
-
-        header.add(courseTitle);
+        courseTitle.addClassName("course-card-title");
 
         // Información del profesor
         Div professorInfo = createInfoRow(VaadinIcon.USER, "Profesor", course.getProfessorName());
@@ -212,8 +158,7 @@ public class StudentCoursesView extends SecureView {
                 .count();
         Div studentsInfo = createInfoRow(VaadinIcon.GROUP, "Estudiantes inscritos", String.valueOf(enrolledCount));
 
-        // Agregar todos los elementos a la tarjeta
-        card.add(header, professorInfo, markInfo);
+        card.add(courseTitle, professorInfo, markInfo);
         if (yearInfo != null) {
             card.add(yearInfo);
         }
@@ -224,30 +169,15 @@ public class StudentCoursesView extends SecureView {
 
     private Div createInfoRow(VaadinIcon iconType, String label, String value) {
         Div row = new Div();
-        row.getStyle()
-                .set("display", "flex")
-                .set("align-items", "center")
-                .set("gap", "var(--lumo-space-s)")
-                .set("margin-bottom", "var(--lumo-space-s)")
-                .set("padding", "var(--lumo-space-xs) 0");
-
-        Icon icon = new Icon(iconType);
-        icon.setSize("18px");
-        icon.getStyle().set("color", "var(--lumo-primary-color)");
+        row.addClassName("course-info-row");
 
         Span labelSpan = new Span(label + ":");
-        labelSpan.getStyle()
-                .set("font-weight", "500")
-                .set("color", "var(--lumo-contrast-70pct)")
-                .set("font-size", "var(--lumo-font-size-s)");
+        labelSpan.addClassName("course-info-label");
 
         Span valueSpan = new Span(value);
-        valueSpan.getStyle()
-                .set("color", "var(--lumo-body-text-color)")
-                .set("font-size", "var(--lumo-font-size-m)")
-                .set("margin-left", "auto");
+        valueSpan.addClassName("course-info-value");
 
-        row.add(icon, labelSpan, valueSpan);
+        row.add(labelSpan, valueSpan);
         return row;
     }
 

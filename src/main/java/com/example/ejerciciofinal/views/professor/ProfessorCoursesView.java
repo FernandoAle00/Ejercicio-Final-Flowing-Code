@@ -16,6 +16,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
@@ -36,6 +37,7 @@ import com.vaadin.flow.router.Route;
  * Vista de ejemplo para profesores Solo accesible por usuarios con rol
  * PROFESSOR
  */
+@CssImport("./styles/courses-view-styles.css")
 @ProfessorOnly
 @Route(value = "professor/courses", layout = MainLayout.class)
 @PageTitle("Mis Cursos | Profesor")
@@ -55,29 +57,17 @@ public class ProfessorCoursesView extends SecureView {
         setPadding(false);
         setSizeFull();
 
-        // Contenedor principal con padding
+        // Contenedor principal con padding y centrado
         Div mainContainer = new Div();
-        mainContainer.getStyle()
-                .set("padding", "var(--lumo-space-l)")
-                .set("max-width", "1400px")
-                .set("margin", "0 auto")
-                .set("width", "100%");
-
-        H2 title = new H2("Mis Cursos");
-        title.getStyle()
-                .set("margin-top", "0")
-                .set("margin-bottom", "var(--lumo-space-l)")
-                .set("color", "var(--lumo-header-text-color)");
+        mainContainer.addClassName("courses-main-container");
 
         Long userId = AuthService.getCurrentUserId();
 
-        // Contenedor de cursos en grilla
+        H2 title = new H2("Mis Cursos");
+        title.addClassName("course-section-title");
+
         Div coursesGrid = new Div();
-        coursesGrid.getStyle()
-                .set("display", "grid")
-                .set("grid-template-columns", "repeat(auto-fill, minmax(380px, 1fr))")
-                .set("gap", "var(--lumo-space-l)")
-                .set("width", "100%");
+        coursesGrid.addClassName("courses-grid");
 
         // Obtener el Professor usando el método correcto que maneja el proxy de Hibernate
         Professor professor = userService.getProfessorByUserId(userId);
@@ -105,21 +95,17 @@ public class ProfessorCoursesView extends SecureView {
 
     private Div createEmptyState() {
         Div emptyState = new Div();
-        emptyState.getStyle()
-                .set("text-align", "center")
-                .set("padding", "var(--lumo-space-xl)")
-                .set("background", "var(--lumo-contrast-5pct)")
-                .set("border-radius", "var(--lumo-border-radius-l)");
+        emptyState.addClassName("empty-state");
 
         Icon icon = new Icon(VaadinIcon.BOOK);
         icon.setSize("64px");
-        icon.getStyle().set("color", "var(--lumo-contrast-40pct)");
+        icon.addClassName("empty-state-icon");
 
         H3 emptyTitle = new H3("No tienes ningún curso asignado para dictar");
-        emptyTitle.getStyle().set("color", "var(--lumo-contrast-60pct)");
+        emptyTitle.addClassName("empty-state-text");
 
         Span emptyMessage = new Span("Los cursos asignados a tu cuenta aparecerán aquí.");
-        emptyMessage.getStyle().set("color", "var(--lumo-contrast-50pct)");
+        emptyMessage.addClassName("empty-state-text");
 
         emptyState.add(icon, emptyTitle, emptyMessage);
         return emptyState;
@@ -146,56 +132,13 @@ public class ProfessorCoursesView extends SecureView {
                 .filter(seat -> seat.getMark() != null)
                 .count();
 
-        // Tarjeta principal del curso
         Div card = new Div();
-        card.getStyle()
-                .set("background", "var(--lumo-base-color)")
-                .set("border", "1px solid var(--lumo-contrast-10pct)")
-                .set("border-radius", "var(--lumo-border-radius-l)")
-                .set("padding", "var(--lumo-space-m)")
-                .set("box-shadow", "var(--lumo-box-shadow-s)")
-                .set("transition", "all 0.3s ease")
-                .set("height", "100%")
-                .set("display", "flex")
-                .set("flex-direction", "column");
-
-        // Efecto hover
-        card.getElement().addEventListener("mouseenter", e -> {
-            card.getStyle()
-                    .set("box-shadow", "var(--lumo-box-shadow-m)")
-                    .set("transform", "translateY(-4px)");
-        });
-        card.getElement().addEventListener("mouseleave", e -> {
-            card.getStyle()
-                    .set("box-shadow", "var(--lumo-box-shadow-s)")
-                    .set("transform", "translateY(0)");
-        });
-
-        // Header del curso con gradiente verde para profesor
-        Div header = new Div();
-        header.getStyle()
-                .set("background", "linear-gradient(135deg, #10b981 0%, #059669 100%)")
-                .set("color", "white")
-                .set("padding", "var(--lumo-space-m)")
-                .set("border-radius", "var(--lumo-border-radius-m)")
-                .set("margin-bottom", "var(--lumo-space-m)");
+        card.addClassName("course-card");
 
         H3 courseTitle = new H3(course.getName());
-        courseTitle.getStyle()
-                .set("margin", "0")
-                .set("font-size", "var(--lumo-font-size-l)")
-                .set("font-weight", "600")
-                .set("color", "inherit");
+        courseTitle.addClassName("course-card-title");
 
-        header.add(courseTitle);
-
-        // Sección de estadísticas
         Div statsSection = new Div();
-        statsSection.getStyle()
-                .set("display", "flex")
-                .set("flex-direction", "column")
-                .set("gap", "var(--lumo-space-s)")
-                .set("margin-bottom", "var(--lumo-space-m)");
 
         // Estudiantes inscritos
         Div enrolledInfo = createInfoRow(VaadinIcon.USERS, "Estudiantes inscritos",
@@ -253,19 +196,13 @@ public class ProfessorCoursesView extends SecureView {
 
         statsSection.add(enrolledInfo, availableInfo, averageInfo);
 
-        // Sección de estudiantes inscritos (lista desplegable)
         Div studentsSection = new Div();
-        studentsSection.getStyle()
-                .set("margin-top", "var(--lumo-space-m)")
-                .set("border-top", "1px solid var(--lumo-contrast-10pct)")
-                .set("padding-top", "var(--lumo-space-m)");
+        studentsSection.addClassName("students-table");
 
-        // Header de la sección con botón de inscribir
         HorizontalLayout studentsHeader = new HorizontalLayout();
         studentsHeader.setWidthFull();
         studentsHeader.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
         studentsHeader.setAlignItems(FlexComponent.Alignment.CENTER);
-        studentsHeader.getStyle().set("margin-bottom", "var(--lumo-space-s)");
 
         H3 studentsTitle = new H3("Estudiantes inscritos:");
         studentsTitle.getStyle()
@@ -309,106 +246,51 @@ public class ProfessorCoursesView extends SecureView {
             studentsSection.add(noStudents);
         }
 
-        // Agregar todos los elementos a la tarjeta
-        card.add(header, statsSection, studentsSection);
+        card.add(courseTitle, statsSection, studentsSection);
 
         return card;
     }
 
     private Div createStudentRow(SeatDTO seat, Long courseId) {
         Div row = new Div();
-        row.getStyle()
-                .set("display", "flex")
-                .set("justify-content", "space-between")
-                .set("align-items", "center")
-                .set("padding", "var(--lumo-space-xs)")
-                .set("background", "var(--lumo-contrast-5pct)")
-                .set("border-radius", "var(--lumo-border-radius-s)")
-                .set("border-left", "3px solid var(--lumo-primary-color)");
+        row.addClassName("students-table-row");
 
-        // Contenedor para nombre y nota
-        Div infoContainer = new Div();
-        infoContainer.getStyle()
-                .set("display", "flex")
-                .set("align-items", "center")
-                .set("gap", "var(--lumo-space-m)")
-                .set("flex", "1");
-
-        // Nombre del estudiante
         Span studentName = new Span(seat.getStudentName() != null ? seat.getStudentName() : "Sin nombre");
-        studentName.getStyle()
-                .set("font-weight", "500")
-                .set("flex", "1");
-
-        // Nota del estudiante con ícono de editar
-        HorizontalLayout gradeLayout = new HorizontalLayout();
-        gradeLayout.setSpacing(false);
-        gradeLayout.setPadding(false);
-        gradeLayout.setAlignItems(FlexComponent.Alignment.CENTER);
-        gradeLayout.getStyle().set("gap", "var(--lumo-space-xs)");
+        studentName.addClassName("student-name");
 
         Span gradeDisplay = new Span();
+        gradeDisplay.addClassName("student-mark");
         if (seat.getMark() != null) {
             gradeDisplay.setText(String.format("%.2f", seat.getMark()));
-            gradeDisplay.getStyle()
-                    .set("color", getMarkColor(seat.getMark()))
-                    .set("font-weight", "bold")
-                    .set("padding", "2px 8px")
-                    .set("border-radius", "var(--lumo-border-radius-s)")
-                    .set("background", "var(--lumo-base-color)");
+            gradeDisplay.getStyle().set("color", getMarkColor(seat.getMark()));
         } else {
             gradeDisplay.setText("Sin nota");
-            gradeDisplay.getStyle()
-                    .set("color", "var(--lumo-contrast-50pct)")
-                    .set("font-style", "italic")
-                    .set("font-size", "var(--lumo-font-size-s)");
         }
 
-        // Botón para editar nota
         Button editGradeButton = new Button(new Icon(VaadinIcon.EDIT));
+        editGradeButton.addClassName("edit-button");
         editGradeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
-        editGradeButton.getStyle()
-                .set("color", "var(--lumo-primary-color)")
-                .set("padding", "0")
-                .set("min-width", "auto");
         editGradeButton.addClickListener(e -> showEditGradeDialog(seat, courseId));
 
-        gradeLayout.add(gradeDisplay, editGradeButton);
-        infoContainer.add(studentName, gradeLayout);
-
-        // Botón para desinscribir
         Button removeButton = new Button(new Icon(VaadinIcon.TRASH));
         removeButton.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
-        removeButton.getStyle().set("margin-left", "auto");
         removeButton.addClickListener(e -> showUnassignConfirmDialog(seat.getStudentId(), courseId, seat.getStudentName()));
 
-        row.add(infoContainer, removeButton);
+        row.add(studentName, gradeDisplay, editGradeButton, removeButton);
         return row;
     }
 
     private Div createInfoRow(VaadinIcon iconType, String label, String value) {
         Div row = new Div();
-        row.getStyle()
-                .set("display", "flex")
-                .set("align-items", "center")
-                .set("gap", "var(--lumo-space-s)");
-
-        Icon icon = new Icon(iconType);
-        icon.setSize("20px");
-        icon.getStyle().set("color", "var(--lumo-contrast-60pct)");
+        row.addClassName("course-info-row");
 
         Span labelSpan = new Span(label + ":");
-        labelSpan.getStyle()
-                .set("color", "var(--lumo-contrast-60pct)")
-                .set("font-size", "var(--lumo-font-size-s)");
+        labelSpan.addClassName("course-info-label");
 
         Span valueSpan = new Span(value);
-        valueSpan.getStyle()
-                .set("color", "var(--lumo-contrast-90pct)")
-                .set("font-weight", "500")
-                .set("margin-left", "auto");
+        valueSpan.addClassName("course-info-value");
 
-        row.add(icon, labelSpan, valueSpan);
+        row.add(labelSpan, valueSpan);
         return row;
     }
 

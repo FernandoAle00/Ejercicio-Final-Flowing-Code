@@ -1,0 +1,173 @@
+/**
+ * Estilos globales para vistas de cursos
+ * Aplicable a: ProfessorCoursesView, StudentCoursesView
+ */
+
+/* ============================================
+   CONTENEDORES PRINCIPALES
+============================================ */
+.courses-main-container {
+    padding: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.courses-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 50px 24px;
+    /* forzar separación vertical entre filas */
+    column-gap: 24px;
+    /* forzar separación horizontal entre columnas */
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Limitar a máximo 3 columnas */
+@media (min-width: 1400px) {
+    .courses-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* ============================================
+   TARJETAS DE CURSO
+============================================ */
+.course-card {
+    background: var(--lumo-base-color);
+    border: 1px solid var(--lumo-contrast-10pct);
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: var(--lumo-box-shadow-s);
+    transition: all 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    margin: 0px;
+    /* Sin márgenes, el gap del grid se encarga */
+}
+
+.course-card:hover {
+    box-shadow: var(--lumo-box-shadow-m);
+    transform: translateY(-4px);
+}
+
+/* ============================================
+   TÍTULOS Y ENCABEZADOS
+============================================ */
+.course-card-title {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    padding: var(--lumo-space-m);
+    border-radius: var(--lumo-border-radius-m);
+    margin: 0 0 var(--lumo-space-m) 0;
+    font-size: var(--lumo-font-size-l);
+    font-weight: 600;
+}
+
+.course-section-title {
+    margin: 0 0 var(--lumo-space-l) 0;
+    color: var(--lumo-header-text-color);
+    font-size: var(--lumo-font-size-xl);
+}
+
+/* ============================================
+   INFORMACIÓN DE CURSO
+============================================ */
+.course-info-row {
+    display: flex;
+    align-items: center;
+    gap: var(--lumo-space-s);
+    margin-bottom: var(--lumo-space-s);
+}
+
+.course-info-label {
+    color: var(--lumo-contrast-60pct);
+    font-size: var(--lumo-font-size-s);
+}
+
+.course-info-value {
+    color: var(--lumo-contrast-90pct);
+    font-weight: 500;
+    margin-left: auto;
+}
+
+/* ============================================
+   TABLA DE ESTUDIANTES
+============================================ */
+.students-table {
+    margin-top: var(--lumo-space-m);
+    border-top: 1px solid var(--lumo-contrast-10pct);
+    padding-top: var(--lumo-space-m);
+}
+
+.students-table-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--lumo-space-xs);
+    background: var(--lumo-contrast-5pct);
+    border-radius: var(--lumo-border-radius-s);
+    border-left: 3px solid var(--lumo-primary-color);
+    margin-bottom: var(--lumo-space-xs);
+}
+
+.students-table-row:last-child {
+    margin-bottom: 0;
+}
+
+.student-name {
+    font-weight: 500;
+    flex: 1;
+}
+
+.student-mark {
+    font-weight: bold;
+    padding: 2px 8px;
+    border-radius: var(--lumo-border-radius-s);
+    background: var(--lumo-base-color);
+}
+
+/* ============================================
+   BOTONES Y ACCIONES
+============================================ */
+.edit-button {
+    cursor: pointer;
+    color: var(--lumo-primary-color);
+    padding: 0;
+    min-width: auto;
+}
+
+/* ============================================
+   ESTADOS VACÍOS
+============================================ */
+.empty-state {
+    text-align: center;
+    padding: var(--lumo-space-xl);
+    background: var(--lumo-contrast-5pct);
+    border-radius: var(--lumo-border-radius-l);
+}
+
+.empty-state-icon {
+    color: var(--lumo-contrast-40pct);
+    margin-bottom: var(--lumo-space-m);
+}
+
+.empty-state-text {
+    color: var(--lumo-contrast-60pct);
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+============================================ */
+@media (max-width: 768px) {
+    .courses-main-container {
+        padding: var(--lumo-space-m);
+    }
+
+    .courses-grid {
+        grid-template-columns: 1fr;
+    }
+}
