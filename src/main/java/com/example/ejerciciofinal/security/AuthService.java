@@ -2,10 +2,12 @@ package com.example.ejerciciofinal.security;
 
 import com.example.ejerciciofinal.model.Role;
 import com.vaadin.flow.server.VaadinSession;
+import org.springframework.stereotype.Service;
 
 /**
  * Servicio de autenticación con usuarios mockeados
  */
+@Service
 public class AuthService {
 
     // Usuarios mockeados: username -> password, role
@@ -18,23 +20,42 @@ public class AuthService {
     private static final String SESSION_USER_KEY = "authenticated_user";
     private static final String SESSION_ROLE_KEY = "user_role";
 
+    public AuthService() {
+        System.out.println("=== AuthService inicializado ===");
+        System.out.println("Usuarios disponibles: " + MOCK_USERS.keySet());
+        MOCK_USERS.forEach((user, creds) -> {
+            System.out.println("  - " + user + " -> password: " + creds.password + ", role: " + creds.role);
+        });
+    }
+
     /**
      * Autentica un usuario con credenciales mockeadas
      */
     public boolean authenticate(String username, String password) {
+
         if (username == null || password == null) {
+            System.out.println("Username o password es null");
             return false;
         }
 
-        UserCredentials credentials = MOCK_USERS.get(username.toLowerCase());
+        String usernameLower = username.toLowerCase().trim();
         
-        if (credentials != null && credentials.password.equals(password)) {
-            VaadinSession session = VaadinSession.getCurrent();
-            session.setAttribute(SESSION_USER_KEY, username);
-            session.setAttribute(SESSION_ROLE_KEY, credentials.role);
-            return true;
+        UserCredentials credentials = MOCK_USERS.get(usernameLower);
+        
+        if (credentials != null) {
+            
+            if (credentials.password.equals(password)) {
+                VaadinSession session = VaadinSession.getCurrent();
+                
+                if (session != null) {
+                    session.setAttribute(SESSION_USER_KEY, username);
+                    session.setAttribute(SESSION_ROLE_KEY, credentials.role);
+
+                    return true;
+                }
+            }
         }
-        
+
         return false;
     }
 

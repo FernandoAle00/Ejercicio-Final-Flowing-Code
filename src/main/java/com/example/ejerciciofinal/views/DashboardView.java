@@ -6,13 +6,11 @@ import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
-@Route(value = "", layout = com.example.base.ui.MainLayout.class)
+@Route(value = "", layout = MainLayout.class)
 @PageTitle("Dashboard | Sistema Académico")
-@Menu(order = 0, icon = "line-awesome/svg/home-solid.svg")
 public class DashboardView extends VerticalLayout {
 
     public DashboardView() {
